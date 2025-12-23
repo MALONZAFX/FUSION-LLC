@@ -158,7 +158,7 @@ def newsletter_submit(request):
             subscription = NewsletterSubscription.objects.get(email=email)
             return JsonResponse({
                 'status': 'info',
-                'message': f'You are already subscribed to our newsletter! (Subscribed on {subscription.subscribed_at.strftime("%Y-%m-%d")})'
+                'message': f'You are already subscribed to our newsletter! (Subscribed on {subscription.created_at.strftime("%Y-%m-%d")})'
             })
         
         # Create subscription in Django database
