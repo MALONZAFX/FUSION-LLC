@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.utils import timezone
 import json
 import logging
 from django.db import IntegrityError
@@ -27,38 +28,57 @@ def log_system_action(message, level='info', source='views', request=None):
         )
     except Exception as e:
         logger.error(f"Failed to log action: {e}")
-
+        
 def home(request):
-    """Main home view - FETCHES DATA FROM DATABASE"""
+    """Main home view - with aggressive cache prevention"""
     try:
-        # Get active newsletter content
+        # Debug - print to console on EVERY request
+        print("\n" + "="*80)
+        print(f"[DEBUG] Home view called at: {timezone.now()}")
+        
+        # Get all data
+        site_settings = SiteSettings.objects.first()
+        hero_images = HeroImage.objects.filter(is_active=True).order_by('order')
+        about_section = AboutSection.objects.filter(is_active=True).first()
+        services = Service.objects.filter(is_active=True).order_by('order')
+        results = ImpactResult.objects.filter(is_active=True).order_by('order')
+        gallery_images = GalleryImage.objects.filter(is_active=True).order_by('order')[:6]
+        testimonials = Testimonial.objects.filter(is_active=True).order_by('order')
         newsletter = NewsletterContent.objects.filter(is_active=True).first()
         
-        # Log what we found (for debugging)
-        if newsletter:
-            logger.info(f"Found newsletter: {newsletter.title}")
-            logger.info(f"Newsletter image: {newsletter.image}")
-            logger.info(f"Newsletter PDF: {newsletter.pdf_file}")
+        # ADD DEBUG PRINT
+        print(f"\n🔥 DEBUG DATA:")
+        print(f"Hero Images: {hero_images.count()}")
+        print(f"About Section: {about_section}")
+        print(f"Services: {services.count()}")
+        print(f"Gallery Images: {gallery_images.count()}")
         
         context = {
-            'site_settings': SiteSettings.objects.first(),
-            'hero_images': HeroImage.objects.filter(is_active=True).order_by('order'),
-            'about_section': AboutSection.objects.filter(is_active=True).first(),
-            'services': Service.objects.filter(is_active=True).order_by('order'),
-            'results': ImpactResult.objects.filter(is_active=True).order_by('order'),
-            'gallery_images': GalleryImage.objects.filter(is_active=True).order_by('order')[:6],
-            'testimonials': Testimonial.objects.filter(is_active=True).order_by('order'),
-            'newsletter': newsletter,  # ← Now this will be the actual newsletter object
+            'site_settings': site_settings,
+            'hero_images': hero_images,
+            'about_section': about_section,
+            'services': services,
+            'results': results,
+            'gallery_images': gallery_images,
+            'testimonials': testimonials,
+            'newsletter': newsletter,
         }
         
-        # Debug: Check if context is populated
-        logger.info(f"Newsletter in context: {'Yes' if context['newsletter'] else 'No'}")
+        response = render(request, 'main/index.html', context)
         
-        return render(request, 'main/index.html', context)
+       # ADD THESE LINES FOR PRODUCTION:
+        response['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+        response['Pragma'] = 'no-cache'
+        response['Expires'] = '0'
+    
+        return response
+        
+        
         
     except Exception as e:
-        logger.error(f"Error in home view: {str(e)}")
-        # Return a simplified version if there's an error
+        print(f"[ERROR] in home view: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return render(request, 'main/index.html', {})
 
 @csrf_exempt

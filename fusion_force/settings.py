@@ -152,14 +152,14 @@ try:
         print("⚠️ Railway: Media files are TEMPORARY (will be deleted on restart)")
         MEDIA_URL = '/media/'
     else:
-        MEDIA_URL = 'media/'
+        MEDIA_URL = '/media/'
     
     MEDIA_ROOT = BASE_DIR / 'media'
     os.makedirs(MEDIA_ROOT, exist_ok=True)
     print(f"✅ Media directory: {MEDIA_ROOT}")
     
     # ========== WHITENOISE CONFIG ==========
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
     WHITENOISE_AUTOREFRESH = DEBUG
     
     # ========== DEFAULT PRIMARY KEY ==========
