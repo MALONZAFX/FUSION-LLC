@@ -46,40 +46,87 @@ try:
     # ========== DEBUG & HOSTS ==========
     IS_RAILWAY = bool(DATABASE_URL) and 'railway' in DATABASE_URL.lower()
     
-    DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
-    if IS_RAILWAY and not DEBUG:
-        DEBUG = False
+    # Better DEBUG handling
+    if IS_RAILWAY:
+        DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
+    else:
+        # Default to True for local development
+        DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
     
-    ALLOWED_HOSTS = [
-        "fusionforcellc-production.up.railway.app",
-        ".railway.app",
-        "localhost:8000",
-        "127.0.0.1:8000",
-        "www.pamela-fusionforce.com"
-        "pamela-fusionforce.com",
-]
+    # ALLOWED_HOSTS - FIXED (no port numbers, proper commas)
+    ALLOWED_HOSTS = []
     
+    if DEBUG:
+        # Local development hosts
+        ALLOWED_HOSTS.extend([
+            'localhost',
+            '127.0.0.1',
+            '0.0.0.0',
+            '[::1]',  # IPv6 localhost
+        ])
+        
+        # Add local network IP for testing on other devices
+        try:
+            import socket
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            local_ip = s.getsockname()[0]
+            s.close()
+            ALLOWED_HOSTS.append(local_ip)
+            print(f"✅ Local IP detected: {local_ip}")
+        except Exception:
+            pass
+    else:
+        # Production hosts
+        ALLOWED_HOSTS.extend([
+            "fusionforcellc-production.up.railway.app",
+            ".railway.app",  # All railway subdomains
+            "www.pamela-fusionforce.com",
+            "pamela-fusionforce.com",
+        ])
+    
+    print(f"✅ ALLOWED_HOSTS: {ALLOWED_HOSTS}")
+    
+    # CSRF_TRUSTED_ORIGINS - FIXED (proper URLs, proper commas)
     CSRF_TRUSTED_ORIGINS = [
         'https://*.up.railway.app',
         'https://*.railway.app',
         'http://localhost:8000',
         'http://127.0.0.1:8000',
-        'https://www.pamela-fusionforce.com/'
-        'https://www.pamela-fusionforce.com/admin'
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+        'https://www.pamela-fusionforce.com',
+        'https://pamela-fusionforce.com',
     ]
     
+    # Add local network origin if available
+    if DEBUG:
+        try:
+            import socket
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            local_ip = s.getsockname()[0]
+            s.close()
+            CSRF_TRUSTED_ORIGINS.append(f'http://{local_ip}:8000')
+            CSRF_TRUSTED_ORIGINS.append(f'http://{local_ip}:3000')
+        except Exception:
+            pass
+    
+    # ========== SECURITY SETTINGS ==========
     if not DEBUG and IS_RAILWAY:
+        # Production security
         SECURE_SSL_REDIRECT = True
         SESSION_COOKIE_SECURE = True
         CSRF_COOKIE_SECURE = True
         SECURE_BROWSER_XSS_FILTER = True
         SECURE_CONTENT_TYPE_NOSNIFF = True
-        SECURE_HSTS_SECONDS = 31536000
+        SECURE_HSTS_SECONDS = 31536000  # 1 year
         SECURE_HSTS_INCLUDE_SUBDOMAINS = True
         SECURE_HSTS_PRELOAD = True
         SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
         print("🔒 Production security enabled")
     else:
+        # Development security (relaxed)
         SECURE_SSL_REDIRECT = False
         SESSION_COOKIE_SECURE = False
         CSRF_COOKIE_SECURE = False
@@ -88,7 +135,6 @@ try:
     
     # ========== APPLICATION DEFINITION ==========
     INSTALLED_APPS = [
-        'main.apps.MainConfig',
         'django.contrib.admin',
         'django.contrib.auth',
         'django.contrib.contenttypes',
@@ -96,6 +142,7 @@ try:
         'django.contrib.messages',
         'django.contrib.staticfiles',
         'whitenoise.runserver_nostatic',
+        'main.apps.MainConfig',  # Your custom app
     ]
     
     MIDDLEWARE = [
@@ -157,26 +204,52 @@ try:
         print("ℹ️ No static directory found")
     
     # ========== MEDIA FILES ==========
-    if IS_RAILWAY:
-        print("⚠️ Railway: Media files are TEMPORARY (will be deleted on restart)")
-        MEDIA_URL = '/media/'
-    else:
-        MEDIA_URL = '/media/'
-    
+    MEDIA_URL = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media'
     os.makedirs(MEDIA_ROOT, exist_ok=True)
     print(f"✅ Media directory: {MEDIA_ROOT}")
     
     # ========== WHITENOISE CONFIG ==========
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
     WHITENOISE_AUTOREFRESH = DEBUG
+    WHITENOISE_USE_FINDERS = DEBUG
+    WHITENOISE_MANIFEST_STRICT = False
     
     # ========== DEFAULT PRIMARY KEY ==========
     DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
     
+    # ========== SESSION SETTINGS ==========
+    SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+    SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
+    SESSION_SAVE_EVERY_REQUEST = True
+    
     # ========== CUSTOM ADMIN SETTINGS ==========
     ADMIN_SITE_HEADER = "FUSION-FORCE ADMIN"
     ADMIN_SITE_TITLE = "Fusion Force Administration"
+    ADMIN_SITE_INDEX_TITLE = "Welcome to Fusion Force Administration"
+    
+    # ========== LOGGING ==========
+    if DEBUG:
+        LOGGING = {
+            'version': 1,
+            'disable_existing_loggers': False,
+            'handlers': {
+                'console': {
+                    'class': 'logging.StreamHandler',
+                },
+            },
+            'root': {
+                'handlers': ['console'],
+                'level': 'INFO',
+            },
+            'loggers': {
+                'django': {
+                    'handlers': ['console'],
+                    'level': 'INFO',
+                    'propagate': False,
+                },
+            },
+        }
     
     print("✅ All settings loaded successfully!")
     
