@@ -57,6 +57,8 @@ try:
         'https://*.railway.app',
         'http://localhost:8000',
         'http://127.0.0.1:8000',
+        'https://www.pamela-fusionforce.com/'
+        'https://www.pamela-fusionforce.com/admin'
     ]
     
     if not DEBUG and IS_RAILWAY:
