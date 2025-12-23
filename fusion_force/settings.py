@@ -150,7 +150,7 @@ try:
     USE_I18N = True
     USE_TZ = True
     
-    # ========== STATIC & MEDIA FILES ==========
+    # ========== STATIC FILES ==========
     STATIC_URL = '/static/'
     STATIC_ROOT = BASE_DIR / 'staticfiles'
     
@@ -166,13 +166,29 @@ try:
         STATICFILES_DIRS = []
         print("ℹ️ No static directory found")
     
-    MEDIA_URL = 'media/'
-    MEDIA_ROOT = BASE_DIR / 'media'
-    os.makedirs(MEDIA_ROOT, exist_ok=True)
+    # ========== MEDIA FILES - FIXED FOR RAILWAY ==========
+    if IS_RAILWAY:
+        # On Railway: Use external storage or disable uploads
+        print("⚠️ Railway detected: Media uploads will be TEMPORARY (filesystem is ephemeral)")
+        MEDIA_URL = '/media/'  # MUST be '/media/' not 'media/'
+        MEDIA_ROOT = BASE_DIR / 'media'
+    else:
+        # Local development
+        MEDIA_URL = 'media/'
+        MEDIA_ROOT = BASE_DIR / 'media'
     
-    # WhiteNoise configuration
+    # Create media directory if it doesn't exist
+    os.makedirs(MEDIA_ROOT, exist_ok=True)
+    print(f"✅ Media directory: {MEDIA_ROOT}")
+    
+    # WhiteNoise configuration - FIXED
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
     WHITENOISE_AUTOREFRESH = DEBUG  # Auto-refresh in debug mode
+    
+    # IMPORTANT: Add WhiteNoise configuration for media files
+    WHITENOISE_ROOT = STATIC_ROOT
+    # This allows WhiteNoise to serve media files too
+    WHITENOISE_ALLOW_ALL_ORIGINS = True
     
     # ========== DEFAULT PRIMARY KEY ==========
     DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
