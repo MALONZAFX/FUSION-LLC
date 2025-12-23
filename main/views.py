@@ -27,47 +27,24 @@ def log_system_action(message, level='info', source='views', request=None):
         )
     except Exception as e:
         logger.error(f"Failed to log action: {e}")
-
 def home(request):
-    """Main home view that serves the index.html"""
-    
+    """Main home view - TEMPORARY NO-DATABASE VERSION"""
     try:
-        # Get site settings
-        site_settings = SiteSettings.objects.first()
-        
-        # Get hero images (for desktop and mobile)
-        hero_images = HeroImage.objects.filter(is_active=True).order_by('order')
-        
-        # Get about section - FIXED: Get the active one
-        about_section = AboutSection.objects.filter(is_active=True).first()
-        
-        # Get services
-        services = Service.objects.filter(is_active=True).order_by('order')
-        
-        # Get impact results
-        results = ImpactResult.objects.filter(is_active=True).order_by('order')
-        
-        # Get gallery images
-        gallery_images = GalleryImage.objects.filter(is_active=True).order_by('order')
-        
-        # Get testimonials
-        testimonials = Testimonial.objects.filter(is_active=True).order_by('order')
-        
-        # Get newsletter content
-        newsletter = NewsletterContent.objects.filter(is_active=True).first()
-        
         context = {
-            'site_settings': site_settings,
-            'hero_images': hero_images,
-            'about_section': about_section,
-            'services': services,
-            'results': results,
-            'gallery_images': gallery_images,
-            'testimonials': testimonials,
-            'newsletter': newsletter,
+            'site_settings': None,
+            'hero_images': [],
+            'about_section': None,
+            'services': [],
+            'results': [],
+            'gallery_images': [],
+            'testimonials': [],
+            'newsletter': None,
         }
-        
         return render(request, 'main/index.html', context)
+    except Exception as e:
+        # Just print error, don't log to database
+        print(f"ERROR in home view: {e}")
+        return render(request, 'main/index.html', {})
         
     except Exception as e:
         log_system_action(
