@@ -27,32 +27,37 @@ def log_system_action(message, level='info', source='views', request=None):
         )
     except Exception as e:
         logger.error(f"Failed to log action: {e}")
+
 def home(request):
-    """Main home view - TEMPORARY NO-DATABASE VERSION"""
+    """Main home view - FETCHES DATA FROM DATABASE"""
     try:
+        # Get active newsletter content
+        newsletter = NewsletterContent.objects.filter(is_active=True).first()
+        
+        # Log what we found (for debugging)
+        if newsletter:
+            logger.info(f"Found newsletter: {newsletter.title}")
+            logger.info(f"Newsletter image: {newsletter.image}")
+            logger.info(f"Newsletter PDF: {newsletter.pdf_file}")
+        
         context = {
-            'site_settings': None,
-            'hero_images': [],
-            'about_section': None,
-            'services': [],
-            'results': [],
-            'gallery_images': [],
-            'testimonials': [],
-            'newsletter': None,
+            'site_settings': SiteSettings.objects.first(),
+            'hero_images': HeroImage.objects.filter(is_active=True).order_by('order'),
+            'about_section': AboutSection.objects.filter(is_active=True).first(),
+            'services': Service.objects.filter(is_active=True).order_by('order'),
+            'results': ImpactResult.objects.filter(is_active=True).order_by('order'),
+            'gallery_images': GalleryImage.objects.filter(is_active=True).order_by('order')[:6],
+            'testimonials': Testimonial.objects.filter(is_active=True).order_by('order'),
+            'newsletter': newsletter,  # ← Now this will be the actual newsletter object
         }
+        
+        # Debug: Check if context is populated
+        logger.info(f"Newsletter in context: {'Yes' if context['newsletter'] else 'No'}")
+        
         return render(request, 'main/index.html', context)
-    except Exception as e:
-        # Just print error, don't log to database
-        print(f"ERROR in home view: {e}")
-        return render(request, 'main/index.html', {})
         
     except Exception as e:
-        log_system_action(
-            f"Error in home view: {str(e)}",
-            level='error',
-            source='home_view',
-            request=request
-        )
+        logger.error(f"Error in home view: {str(e)}")
         # Return a simplified version if there's an error
         return render(request, 'main/index.html', {})
 

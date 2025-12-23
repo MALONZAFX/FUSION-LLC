@@ -1,4 +1,4 @@
-# settings.py - COMPLETE FIXED VERSION FOR RAILWAY
+# settings.py - COMPLETE FIXED VERSION
 import os
 import sys
 from pathlib import Path
@@ -6,14 +6,11 @@ import dj_database_url
 from dotenv import load_dotenv
 
 # ========== ERROR TRAPPING ==========
-# This catches crashes and shows errors in logs
 try:
     print("🚀 Loading Django settings...")
     
-    # Load environment variables
     load_dotenv()
     
-    # Build paths inside the project like this: BASE_DIR / 'subdir'.
     BASE_DIR = Path(__file__).resolve().parent.parent
     print(f"✅ BASE_DIR: {BASE_DIR}")
     
@@ -25,26 +22,19 @@ try:
     DATABASE_URL = os.environ.get('DATABASE_URL')
     print(f"✅ DATABASE_URL exists: {bool(DATABASE_URL)}")
     
-    # FIXED: Use simpler database config
     if DATABASE_URL:
-        # PRODUCTION: PostgreSQL on Railway
         print("🔵 Using PostgreSQL (Railway/Production)")
-        
-        # FIXED: Removed ssl_require=True which causes Railway connection issues
         DATABASES = {
             'default': dj_database_url.config(
                 default=DATABASE_URL,
                 conn_max_age=600,
                 conn_health_checks=True
-                # REMOVED: ssl_require=True - Railway handles SSL automatically
             )
         }
         
-        # Add SSL options if needed
         if 'sslmode' not in DATABASES['default'].get('OPTIONS', {}):
             DATABASES['default'].setdefault('OPTIONS', {})['sslmode'] = 'require'
     else:
-        # DEVELOPMENT: SQLite locally
         print("🟢 Using SQLite (Local Development)")
         DATABASES = {
             'default': {
@@ -54,24 +44,21 @@ try:
         }
     
     # ========== DEBUG & HOSTS ==========
-    # Check environment - SIMPLIFIED
-    IS_RAILWAY = 'DATABASE_URL' in os.environ and 'railway' in os.environ.get('DATABASE_URL', '').lower()
+    IS_RAILWAY = bool(DATABASE_URL) and 'railway' in DATABASE_URL.lower()
     
-    # Debug mode - allow override
     DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
+    if IS_RAILWAY and not DEBUG:
+        DEBUG = False
     
-    # Hosts - ALWAYS allow all for Railway
     ALLOWED_HOSTS = ['*']
     
-    # CSRF settings for Railway domains
     CSRF_TRUSTED_ORIGINS = [
         'https://*.up.railway.app',
         'https://*.railway.app',
-        'http://localhost:8080',
-        'http://127.0.0.1:8080',
+        'http://localhost:8000',
+        'http://127.0.0.1:8000',
     ]
     
-    # Security settings - only if NOT debug
     if not DEBUG and IS_RAILWAY:
         SECURE_SSL_REDIRECT = True
         SESSION_COOKIE_SECURE = True
@@ -88,10 +75,7 @@ try:
         SESSION_COOKIE_SECURE = False
         CSRF_COOKIE_SECURE = False
         SECURE_HSTS_SECONDS = 0
-        print("🔓 Development security (no HTTPS)")
-    
-    USE_X_FORWARDED_HOST = True
-    USE_X_FORWARDED_PORT = True
+        print("🔓 Development security")
     
     # ========== APPLICATION DEFINITION ==========
     INSTALLED_APPS = [
@@ -107,7 +91,7 @@ try:
     
     MIDDLEWARE = [
         'django.middleware.security.SecurityMiddleware',
-        'whitenoise.middleware.WhiteNoiseMiddleware',  # Must be after SecurityMiddleware
+        'whitenoise.middleware.WhiteNoiseMiddleware',
         'django.contrib.sessions.middleware.SessionMiddleware',
         'django.middleware.common.CommonMiddleware',
         'django.middleware.csrf.CsrfViewMiddleware',
@@ -153,11 +137,8 @@ try:
     # ========== STATIC FILES ==========
     STATIC_URL = '/static/'
     STATIC_ROOT = BASE_DIR / 'staticfiles'
-    
-    # Create staticfiles directory if it doesn't exist
     os.makedirs(STATIC_ROOT, exist_ok=True)
     
-    # Only add STATICFILES_DIRS if the directory exists
     static_dir = BASE_DIR / 'static'
     if static_dir.exists():
         STATICFILES_DIRS = [static_dir]
@@ -166,29 +147,20 @@ try:
         STATICFILES_DIRS = []
         print("ℹ️ No static directory found")
     
-    # ========== MEDIA FILES - FIXED FOR RAILWAY ==========
+    # ========== MEDIA FILES ==========
     if IS_RAILWAY:
-        # On Railway: Use external storage or disable uploads
-        print("⚠️ Railway detected: Media uploads will be TEMPORARY (filesystem is ephemeral)")
-        MEDIA_URL = '/media/'  # MUST be '/media/' not 'media/'
-        MEDIA_ROOT = BASE_DIR / 'media'
+        print("⚠️ Railway: Media files are TEMPORARY (will be deleted on restart)")
+        MEDIA_URL = '/media/'
     else:
-        # Local development
         MEDIA_URL = 'media/'
-        MEDIA_ROOT = BASE_DIR / 'media'
     
-    # Create media directory if it doesn't exist
+    MEDIA_ROOT = BASE_DIR / 'media'
     os.makedirs(MEDIA_ROOT, exist_ok=True)
     print(f"✅ Media directory: {MEDIA_ROOT}")
     
-    # WhiteNoise configuration - FIXED
+    # ========== WHITENOISE CONFIG ==========
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
-    WHITENOISE_AUTOREFRESH = DEBUG  # Auto-refresh in debug mode
-    
-    # IMPORTANT: Add WhiteNoise configuration for media files
-    WHITENOISE_ROOT = STATIC_ROOT
-    # This allows WhiteNoise to serve media files too
-    WHITENOISE_ALLOW_ALL_ORIGINS = True
+    WHITENOISE_AUTOREFRESH = DEBUG
     
     # ========== DEFAULT PRIMARY KEY ==========
     DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -203,4 +175,4 @@ except Exception as e:
     print(f"❌ CRITICAL ERROR in settings.py: {e}")
     import traceback
     traceback.print_exc()
-    sys.exit(1)  # Force crash with error message
+    sys.exit(1)
