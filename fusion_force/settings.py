@@ -159,7 +159,7 @@ try:
     print(f"✅ Media directory: {MEDIA_ROOT}")
     
     # ========== WHITENOISE CONFIG ==========
-    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
     WHITENOISE_AUTOREFRESH = DEBUG
     
     # ========== DEFAULT PRIMARY KEY ==========
