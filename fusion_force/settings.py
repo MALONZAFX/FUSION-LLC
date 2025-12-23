@@ -171,7 +171,7 @@ try:
     os.makedirs(MEDIA_ROOT, exist_ok=True)
     
     # WhiteNoise configuration
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
     WHITENOISE_AUTOREFRESH = DEBUG  # Auto-refresh in debug mode
     
     # ========== DEFAULT PRIMARY KEY ==========
