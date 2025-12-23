@@ -50,7 +50,14 @@ try:
     if IS_RAILWAY and not DEBUG:
         DEBUG = False
     
-    ALLOWED_HOSTS = ['*']
+    ALLOWED_HOSTS = [
+        "fusionforcellc-production.up.railway.app",
+        ".railway.app",
+        "localhost:8000",
+        "127.0.0.1:8000",
+        "www.pamela-fusionforce.com"
+        "pamela-fusionforce.com",
+]
     
     CSRF_TRUSTED_ORIGINS = [
         'https://*.up.railway.app',
