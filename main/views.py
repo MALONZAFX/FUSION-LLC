@@ -234,35 +234,3 @@ def form_submit_webhook(request):
         )
         return JsonResponse({'status': 'error'}, status=500)
 
-# ============ SIMPLE PAGE VIEWS ============
-def about_page(request):
-    """About page view"""
-    about_section = AboutSection.objects.filter(is_active=True).first()
-    return render(request, 'main/about.html', {'about_section': about_section})
-
-def services_page(request):
-    """Services page view"""
-    services = Service.objects.filter(is_active=True).order_by('order')
-    return render(request, 'main/services.html', {'services': services})
-
-def gallery_page(request):
-    """Gallery page view"""
-    gallery_images = GalleryImage.objects.filter(is_active=True).order_by('order')
-    return render(request, 'main/gallery.html', {'gallery_images': gallery_images})
-
-def testimonials_page(request):
-    """Testimonials page view"""
-    testimonials = Testimonial.objects.filter(is_active=True).order_by('order')
-    return render(request, 'main/testimonials.html', {'testimonials': testimonials})
-
-def contact_page(request):
-    """Contact page view"""
-    return render(request, 'main/contact.html')
-
-def handler404(request, exception):
-    """404 error handler"""
-    return render(request, 'main/404.html', status=404)
-
-def handler500(request):
-    """500 error handler"""
-    return render(request, 'main/500.html', status=500)
