@@ -1,3 +1,4 @@
+# fusion_force/urls.py (main project)
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
@@ -8,6 +9,8 @@ urlpatterns = [
     path('', include('main.urls')),
 ]
 
-# Only serve media files in DEVELOPMENT
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# CRITICAL: Serve media files in both development AND production
+# This is what makes images work on Railway
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Static files are handled by WhiteNoise automatically
