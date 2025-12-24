@@ -1,4 +1,4 @@
-# settings.py - COMPLETE FIXED VERSION
+# settings.py - COMPLETE FIXED VERSION WITH CLOUDINARY
 import os
 import sys
 from pathlib import Path
@@ -52,6 +52,9 @@ try:
     else:
         # Default to True for local development
         DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
+    
+    print(f"✅ DEBUG mode: {DEBUG}")
+    print(f"✅ IS_RAILWAY: {IS_RAILWAY}")
     
     # ALLOWED_HOSTS - FIXED (no port numbers, proper commas)
     ALLOWED_HOSTS = []
@@ -142,7 +145,9 @@ try:
         'django.contrib.messages',
         'django.contrib.staticfiles',
         'whitenoise.runserver_nostatic',
-        'main.apps.MainConfig',  # Your custom app
+        'cloudinary',
+        'cloudinary_storage',
+        'main.apps.MainConfig',
     ]
     
     MIDDLEWARE = [
@@ -203,11 +208,47 @@ try:
         STATICFILES_DIRS = []
         print("ℹ️ No static directory found")
     
-    # ========== MEDIA FILES ==========
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = BASE_DIR / 'media'
-    os.makedirs(MEDIA_ROOT, exist_ok=True)
-    print(f"✅ Media directory: {MEDIA_ROOT}")
+    # ========== MEDIA FILES CONFIGURATION ==========
+    # Check Cloudinary credentials
+    CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME')
+    CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY')
+    CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET')
+    
+    HAS_CLOUDINARY_CREDENTIALS = all([
+        CLOUDINARY_CLOUD_NAME,
+        CLOUDINARY_API_KEY,
+        CLOUDINARY_API_SECRET
+    ])
+    
+    print(f"🌥️ Cloudinary credentials available: {HAS_CLOUDINARY_CREDENTIALS}")
+    
+    if HAS_CLOUDINARY_CREDENTIALS and IS_RAILWAY:
+        # Use Cloudinary for production (Railway)
+        print("✅ Configuring Cloudinary for media storage")
+        
+        CLOUDINARY_STORAGE = {
+            'CLOUD_NAME': CLOUDINARY_CLOUD_NAME,
+            'API_KEY': CLOUDINARY_API_KEY,
+            'API_SECRET': CLOUDINARY_API_SECRET,
+            'SECURE': True,
+        }
+        
+        # Cloudinary for media files
+        DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+        
+        # Media URLs will come from Cloudinary
+        MEDIA_URL = f'https://res.cloudinary.com/{CLOUDINARY_CLOUD_NAME}/'
+        MEDIA_ROOT = ''  # Not used when using Cloudinary
+        
+        print(f"✅ Media files will be stored in Cloudinary: {CLOUDINARY_CLOUD_NAME}")
+    else:
+        # Use local storage for development
+        print("💾 Using local media storage")
+        MEDIA_URL = '/media/'
+        MEDIA_ROOT = BASE_DIR / 'media'
+        os.makedirs(MEDIA_ROOT, exist_ok=True)
+        DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+        print(f"✅ Local media directory: {MEDIA_ROOT}")
     
     # ========== WHITENOISE CONFIG ==========
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -229,27 +270,45 @@ try:
     ADMIN_SITE_INDEX_TITLE = "Welcome to Fusion Force Administration"
     
     # ========== LOGGING ==========
-    if DEBUG:
-        LOGGING = {
-            'version': 1,
-            'disable_existing_loggers': False,
-            'handlers': {
-                'console': {
-                    'class': 'logging.StreamHandler',
-                },
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': '{levelname} {asctime} {module} {message}',
+                'style': '{',
             },
-            'root': {
+        },
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+                'formatter': 'verbose',
+            },
+        },
+        'root': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'loggers': {
+            'django': {
                 'handlers': ['console'],
                 'level': 'INFO',
+                'propagate': False,
             },
-            'loggers': {
-                'django': {
-                    'handlers': ['console'],
-                    'level': 'INFO',
-                    'propagate': False,
-                },
+            'main': {
+                'handlers': ['console'],
+                'level': 'DEBUG' if DEBUG else 'INFO',
+                'propagate': False,
             },
-        }
+        },
+    }
+    
+    # ========== FINAL CONFIG CHECK ==========
+    print(f"📁 STATIC_ROOT: {STATIC_ROOT}")
+    print(f"📁 MEDIA_ROOT: {MEDIA_ROOT}")
+    print(f"🔗 MEDIA_URL: {MEDIA_URL}")
+    print(f"💾 DEFAULT_FILE_STORAGE: {DEFAULT_FILE_STORAGE}")
+    print(f"📦 STATICFILES_STORAGE: {STATICFILES_STORAGE}")
     
     print("✅ All settings loaded successfully!")
     
