@@ -6,6 +6,16 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'fusion_force.settings')
 
 application = get_wsgi_application()
 
-# Add this for WhiteNoise to serve static files
+# FIXED: Use correct path for WhiteNoise
 from whitenoise import WhiteNoise
-application = WhiteNoise(application, root=os.path.join(os.path.dirname(__file__), 'staticfiles'))
+from pathlib import Path
+
+# Get the BASE_DIR from settings
+BASE_DIR = Path(__file__).resolve().parent.parent
+static_root = BASE_DIR / 'staticfiles'
+
+# Only use WhiteNoise if staticfiles directory exists
+if static_root.exists():
+    application = WhiteNoise(application, root=str(static_root))
+else:
+    print(f"⚠️ Warning: staticfiles directory not found at {static_root}")
