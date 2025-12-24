@@ -1,4 +1,4 @@
-# settings.py - FINAL FIX
+# settings.py - WORKING VERSION WITH FIXES
 import os
 from pathlib import Path
 import dj_database_url
@@ -10,8 +10,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-key-123')
 
-# FORCE PRODUCTION MODE
-DEBUG = False
+# DEBUG - Set to True temporarily to see CSS
+DEBUG = True  # Change to False after testing
 
 ALLOWED_HOSTS = ['*']
 
@@ -35,11 +35,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'whitenoise.runserver_nostatic',  # KEEP WHITENOISE
     'main',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # KEEP WHITENOISE
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -68,28 +70,28 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'fusion_force.wsgi.application'
 
-# ========== FIX: STATIC FILES ==========
+# ========== STATIC FILES (FIXED) ==========
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# IMPORTANT: Disable manifest storage - fixes the animate.css error
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+# FIX: Use ManifestStaticFilesStorage but disable strict mode
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+WHITENOISE_MANIFEST_STRICT = False  # THIS FIXES MISSING FILE ERRORS
+WHITENOISE_AUTOREFRESH = DEBUG
 
-# ========== FIX: MEDIA FILES ==========
+# ========== MEDIA FILES (FIXED) ==========
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
+print(f"✅ STATIC_URL: {STATIC_URL}")
 print(f"✅ MEDIA_URL: {MEDIA_URL}")
-print(f"✅ MEDIA_ROOT: {MEDIA_ROOT}")
-print(f"✅ Using simple static storage")
+print(f"✅ WHITENOISE_MANIFEST_STRICT: {WHITENOISE_MANIFEST_STRICT}")
 
-# Security
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-CSRF_TRUSTED_ORIGINS = ['https://*.railway.app']
+# Security - Disable temporarily for testing
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
 
 # Other
 AUTH_PASSWORD_VALIDATORS = [
