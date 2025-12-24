@@ -11,8 +11,6 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">    
-    <!-- Load static files -->
-    {% load static %}
     
     <!-- Replace local paths with CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
@@ -320,7 +318,7 @@
             
             .impact-stat {
                 margin-bottom: 30px;
-            }
+        }
         }
         
         /* Gallery styles */
@@ -772,7 +770,7 @@
                         {% elif forloop.counter0 > 0 and forloop.counter0 < 4 %}
                                 <div class="col-md-4">
                                     <div class="position-relative gallery-item" style="border-radius: 15px; overflow: hidden;">
-                                        <img src="{{ image.image.url }}" alt="{{ image.title }}" 
+                                        <img src="{{ image.image.url }}" alt="{{ image.title }}"
                                              class="img-fluid w-100" style="height: 200px; object-fit: cover;">
                                         <div class="gallery-overlay">
                                             <div class="gallery-content">
@@ -790,7 +788,7 @@
                         <!-- Last tall image -->
                         <div class="col-lg-4">
                             <div class="position-relative gallery-item-tall h-100" style="border-radius: 20px; overflow: hidden;">
-                                <img src="{{ image.image.url }}" 
+                                <img src="{{ image.image.url }}"
                                      alt="{{ image.title }}" class="img-fluid w-100 h-100" style="object-fit: cover;">
                                 <div class="gallery-overlay">
                                     <div class="gallery-content">

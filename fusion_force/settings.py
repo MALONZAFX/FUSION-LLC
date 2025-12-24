@@ -1,4 +1,4 @@
-# settings.py - COMPLETE FIXED VERSION WITH CLOUDINARY
+# settings.py - FIXED VERSION
 import os
 import sys
 from pathlib import Path
@@ -44,31 +44,28 @@ try:
         }
     
     # ========== DEBUG & HOSTS ==========
-    IS_RAILWAY = bool(DATABASE_URL) and 'railway' in DATABASE_URL.lower()
+    # Check if we're on Railway (better detection)
+    IS_RAILWAY = 'RAILWAY_ENVIRONMENT' in os.environ or bool(DATABASE_URL and 'railway' in DATABASE_URL.lower())
     
-    # Better DEBUG handling
+    # DEBUG handling
     if IS_RAILWAY:
         DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
     else:
-        # Default to True for local development
         DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
     
     print(f"✅ DEBUG mode: {DEBUG}")
     print(f"✅ IS_RAILWAY: {IS_RAILWAY}")
     
-    # ALLOWED_HOSTS - FIXED (no port numbers, proper commas)
+    # ALLOWED_HOSTS
     ALLOWED_HOSTS = []
     
     if DEBUG:
-        # Local development hosts
         ALLOWED_HOSTS.extend([
             'localhost',
             '127.0.0.1',
             '0.0.0.0',
-            '[::1]',  # IPv6 localhost
+            '[::1]',
         ])
-        
-        # Add local network IP for testing on other devices
         try:
             import socket
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -80,30 +77,30 @@ try:
         except Exception:
             pass
     else:
-        # Production hosts
         ALLOWED_HOSTS.extend([
             "fusionforcellc-production.up.railway.app",
-            ".railway.app",  # All railway subdomains
+            ".railway.app",
             "www.pamela-fusionforce.com",
             "pamela-fusionforce.com",
         ])
     
     print(f"✅ ALLOWED_HOSTS: {ALLOWED_HOSTS}")
     
-    # CSRF_TRUSTED_ORIGINS - FIXED (proper URLs, proper commas)
+    # CSRF_TRUSTED_ORIGINS
     CSRF_TRUSTED_ORIGINS = [
         'https://*.up.railway.app',
         'https://*.railway.app',
-        'http://localhost:8000',
-        'http://127.0.0.1:8000',
-        'http://localhost:3000',
-        'http://127.0.0.1:3000',
         'https://www.pamela-fusionforce.com',
         'https://pamela-fusionforce.com',
     ]
     
-    # Add local network origin if available
     if DEBUG:
+        CSRF_TRUSTED_ORIGINS.extend([
+            'http://localhost:8000',
+            'http://127.0.0.1:8000',
+            'http://localhost:3000',
+            'http://127.0.0.1:3000',
+        ])
         try:
             import socket
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -116,20 +113,20 @@ try:
             pass
     
     # ========== SECURITY SETTINGS ==========
-    if not DEBUG and IS_RAILWAY:
+    if not DEBUG:
         # Production security
         SECURE_SSL_REDIRECT = True
         SESSION_COOKIE_SECURE = True
         CSRF_COOKIE_SECURE = True
         SECURE_BROWSER_XSS_FILTER = True
         SECURE_CONTENT_TYPE_NOSNIFF = True
-        SECURE_HSTS_SECONDS = 31536000  # 1 year
+        SECURE_HSTS_SECONDS = 31536000
         SECURE_HSTS_INCLUDE_SUBDOMAINS = True
         SECURE_HSTS_PRELOAD = True
         SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
         print("🔒 Production security enabled")
     else:
-        # Development security (relaxed)
+        # Development security
         SECURE_SSL_REDIRECT = False
         SESSION_COOKIE_SECURE = False
         CSRF_COOKIE_SECURE = False
@@ -208,7 +205,7 @@ try:
         STATICFILES_DIRS = []
         print("ℹ️ No static directory found")
     
-    # ========== MEDIA FILES CONFIGURATION ==========
+    # ========== MEDIA FILES CONFIGURATION - FIXED ==========
     # Check Cloudinary credentials
     CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME')
     CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY')
@@ -222,10 +219,23 @@ try:
     
     print(f"🌥️ Cloudinary credentials available: {HAS_CLOUDINARY_CREDENTIALS}")
     
-    if HAS_CLOUDINARY_CREDENTIALS and IS_RAILWAY:
-        # Use Cloudinary for production (Railway)
+    if HAS_CLOUDINARY_CREDENTIALS:
+        # USE CLOUDINARY IF CREDENTIALS EXIST (regardless of Railway/local)
         print("✅ Configuring Cloudinary for media storage")
         
+        # Import and configure Cloudinary
+        import cloudinary
+        import cloudinary.uploader
+        import cloudinary.api
+        
+        cloudinary.config(
+            cloud_name=CLOUDINARY_CLOUD_NAME,
+            api_key=CLOUDINARY_API_KEY,
+            api_secret=CLOUDINARY_API_SECRET,
+            secure=True
+        )
+        
+        # Cloudinary storage settings
         CLOUDINARY_STORAGE = {
             'CLOUD_NAME': CLOUDINARY_CLOUD_NAME,
             'API_KEY': CLOUDINARY_API_KEY,
@@ -233,17 +243,32 @@ try:
             'SECURE': True,
         }
         
-        # Cloudinary for media files
+        # Use Cloudinary for media files
         DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
         
-        # Media URLs will come from Cloudinary
+        # Set media URL to Cloudinary
         MEDIA_URL = f'https://res.cloudinary.com/{CLOUDINARY_CLOUD_NAME}/'
-        MEDIA_ROOT = ''  # Not used when using Cloudinary
+        
+        # No local media root needed when using Cloudinary
+        MEDIA_ROOT = ''
         
         print(f"✅ Media files will be stored in Cloudinary: {CLOUDINARY_CLOUD_NAME}")
+        
+    elif IS_RAILWAY and not HAS_CLOUDINARY_CREDENTIALS:
+        # ON RAILWAY WITHOUT CLOUDINARY - USE RAILWAY VOLUME
+        print("⚠️  On Railway without Cloudinary - using Railway volume for media")
+        
+        # Use Railway volume path for media
+        MEDIA_ROOT = '/data/media'
+        os.makedirs(MEDIA_ROOT, exist_ok=True)
+        MEDIA_URL = '/media/'
+        DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+        
+        print(f"✅ Using Railway volume for media: {MEDIA_ROOT}")
+        
     else:
-        # Use local storage for development
-        print("💾 Using local media storage")
+        # LOCAL DEVELOPMENT WITHOUT CLOUDINARY
+        print("💾 Using local media storage (development)")
         MEDIA_URL = '/media/'
         MEDIA_ROOT = BASE_DIR / 'media'
         os.makedirs(MEDIA_ROOT, exist_ok=True)
@@ -261,7 +286,7 @@ try:
     
     # ========== SESSION SETTINGS ==========
     SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-    SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
+    SESSION_COOKIE_AGE = 1209600
     SESSION_SAVE_EVERY_REQUEST = True
     
     # ========== CUSTOM ADMIN SETTINGS ==========

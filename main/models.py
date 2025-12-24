@@ -1,5 +1,4 @@
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
 
 # ============ SITE SETTINGS ============
 class SiteSettings(models.Model):
@@ -49,7 +48,6 @@ class AboutSection(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    # FIXED: Ensure this property works correctly
     @property
     def bullet_points_list(self):
         if self.bullet_points:
@@ -223,7 +221,7 @@ class NewsletterSubscription(models.Model):
     source = models.CharField(max_length=50, choices=SOURCE_CHOICES, default='footer')
     is_active = models.BooleanField(default=True)
     agreed_to_terms = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)  # Add this if missing
+    created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
         return self.email

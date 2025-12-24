@@ -40,8 +40,6 @@ def duplicate_items(modeladmin, request, queryset):
 duplicate_items.short_description = "📋 Duplicate selected items"
 
 def export_as_json(modeladmin, request, queryset):
-    import json
-    from django.http import HttpResponse
     data = []
     for obj in queryset:
         data.append({
@@ -82,7 +80,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         if obj.logo:
             return format_html(
                 '<img src="{}" style="width: 50px; height: 50px; object-fit: contain; background: #f0f0f0; padding: 5px; border-radius: 5px;" />', 
-                obj.logo.url
+                obj.logo.url  # FIXED: Use direct .url
             )
         return format_html('<div style="width: 50px; height: 50px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 5px;">No Logo</div>')
     logo_preview.short_description = 'Logo'
@@ -91,7 +89,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         if obj.logo:
             return format_html(
                 '<img src="{}" style="max-width: 300px; max-height: 200px; object-fit: contain; background: #f0f0f0; padding: 10px; border-radius: 10px; border: 1px solid #ddd;" />', 
-                obj.logo.url
+                obj.logo.url  # FIXED: Use direct .url
             )
         return "No logo uploaded"
     logo_preview_large.short_description = 'Logo Preview'
@@ -124,8 +122,8 @@ class SiteSettingsAdmin(admin.ModelAdmin):
 class HeroImageAdmin(admin.ModelAdmin):
     list_display = ['image_preview', 'title', 'position_display', 'order', 'is_active_badge', 'created_at_display']
     list_filter = ['position', ActiveFilter, 'created_at']
-    list_editable = ['order']  # FIXED: Removed 'title' from list_editable
-    list_display_links = ['title']  # ADDED: Make title clickable
+    list_editable = ['order']
+    list_display_links = ['title']
     search_fields = ['title']
     actions = [make_active, make_inactive, duplicate_items]
     readonly_fields = ['created_at', 'image_preview_large']
@@ -135,7 +133,7 @@ class HeroImageAdmin(admin.ModelAdmin):
         if obj.image:
             return format_html(
                 '<img src="{}" style="width: 60px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;" />', 
-                obj.image.url
+                obj.image.url  # FIXED: Use direct .url
             )
         return format_html('<div style="width: 60px; height: 40px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 4px;">No Image</div>')
     image_preview.short_description = 'Preview'
@@ -144,7 +142,7 @@ class HeroImageAdmin(admin.ModelAdmin):
         if obj.image:
             return format_html(
                 '<img src="{}" style="max-width: 400px; max-height: 300px; object-fit: contain; border-radius: 8px; border: 2px solid #ddd;" />', 
-                obj.image.url
+                obj.image.url  # FIXED: Use direct .url
             )
         return "No image uploaded"
     image_preview_large.short_description = 'Large Preview'
@@ -191,7 +189,7 @@ class HeroImageAdmin(admin.ModelAdmin):
 @admin.register(AboutSection)
 class AboutSectionAdmin(admin.ModelAdmin):
     list_display = ['title', 'image_preview', 'is_active_badge', 'created_at_display', 'updated_at_display']
-    list_display_links = ['title']  # FIXED: Added list_display_links
+    list_display_links = ['title']
     search_fields = ['title', 'content']
     readonly_fields = ['created_at', 'updated_at', 'image_preview_large', 'bullet_points_preview']
     actions = [make_active, make_inactive, duplicate_items]
@@ -200,7 +198,7 @@ class AboutSectionAdmin(admin.ModelAdmin):
         if obj.image:
             return format_html(
                 '<img src="{}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;" />', 
-                obj.image.url
+                obj.image.url  # FIXED: Use direct .url
             )
         return format_html('<div style="width: 50px; height: 50px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 4px;">No Image</div>')
     image_preview.short_description = 'Image'
@@ -209,7 +207,7 @@ class AboutSectionAdmin(admin.ModelAdmin):
         if obj.image:
             return format_html(
                 '<img src="{}" style="max-width: 400px; max-height: 300px; object-fit: contain; border-radius: 8px; border: 2px solid #ddd;" />', 
-                obj.image.url
+                obj.image.url  # FIXED: Use direct .url
             )
         return "No image uploaded"
     image_preview_large.short_description = 'Large Preview'
@@ -273,8 +271,8 @@ class AboutSectionAdmin(admin.ModelAdmin):
 class ServiceAdmin(admin.ModelAdmin):
     list_display = ['icon_preview', 'title', 'service_type_display', 'button_text', 'order', 'is_active_badge', 'created_at_display']
     list_filter = ['service_type', ActiveFilter, 'created_at']
-    list_editable = ['order', 'button_text']  # FIXED: Only editable fields that are in list_display
-    list_display_links = ['title']  # ADDED: Make title clickable
+    list_editable = ['order', 'button_text']
+    list_display_links = ['title']
     search_fields = ['title', 'description', 'topics']
     actions = [make_active, make_inactive, duplicate_items]
     readonly_fields = ['created_at', 'updated_at', 'topics_preview']
@@ -354,7 +352,7 @@ class ImpactResultAdmin(admin.ModelAdmin):
     list_display = ['value', 'title', 'order', 'is_active_badge', 'created_at_display']
     list_display_links = ['title']
     list_filter = [ActiveFilter, 'created_at']
-    list_editable = ['value', 'order']  # FIXED: 'value' is in list_display
+    list_editable = ['value', 'order']
     search_fields = ['title', 'value']
     actions = [make_active, make_inactive, duplicate_items]
     readonly_fields = ['created_at']
@@ -393,8 +391,8 @@ class ImpactResultAdmin(admin.ModelAdmin):
 class GalleryImageAdmin(admin.ModelAdmin):
     list_display = ['image_preview', 'title', 'position_display', 'order', 'is_active_badge', 'created_at_display']
     list_filter = ['position', ActiveFilter, 'created_at']
-    list_editable = ['order']  # FIXED: Removed 'position' from list_editable
-    list_display_links = ['title']  # ADDED: Make title clickable
+    list_editable = ['order']
+    list_display_links = ['title']
     search_fields = ['title', 'description']
     actions = [make_active, make_inactive, duplicate_items]
     readonly_fields = ['created_at', 'updated_at', 'image_preview_large']
@@ -404,7 +402,7 @@ class GalleryImageAdmin(admin.ModelAdmin):
         if obj.image:
             return format_html(
                 '<img src="{}" style="width: 60px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;" />', 
-                obj.image.url
+                obj.image.url  # FIXED: Use direct .url
             )
         return format_html('<div style="width: 60px; height: 40px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 4px;">No Image</div>')
     image_preview.short_description = 'Preview'
@@ -413,7 +411,7 @@ class GalleryImageAdmin(admin.ModelAdmin):
         if obj.image:
             return format_html(
                 '<img src="{}" style="max-width: 400px; max-height: 300px; object-fit: contain; border-radius: 8px; border: 2px solid #ddd;" />', 
-                obj.image.url
+                obj.image.url  # FIXED: Use direct .url
             )
         return "No image uploaded"
     image_preview_large.short_description = 'Large Preview'
@@ -466,8 +464,8 @@ class GalleryImageAdmin(admin.ModelAdmin):
 class TestimonialAdmin(admin.ModelAdmin):
     list_display = ['avatar_preview', 'client_name', 'company', 'position', 'order', 'is_active_badge', 'created_at_display']
     list_filter = ['is_active', 'company', 'created_at']
-    list_editable = ['order']  # FIXED: Removed other fields from list_editable
-    list_display_links = ['client_name']  # ADDED: Make client_name clickable
+    list_editable = ['order']
+    list_display_links = ['client_name']
     search_fields = ['client_name', 'company', 'position', 'content']
     actions = [make_active, make_inactive, duplicate_items]
     readonly_fields = ['created_at', 'updated_at', 'avatar_preview_large']
@@ -477,7 +475,7 @@ class TestimonialAdmin(admin.ModelAdmin):
         if obj.avatar:
             return format_html(
                 '<img src="{}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 50%; border: 2px solid #053e91;" />', 
-                obj.avatar.url
+                obj.avatar.url  # FIXED: Use direct .url
             )
         return format_html(
             '<div style="width: 40px; height: 40px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #053e91; font-weight: bold; font-size: 14px;">{}</div>',
@@ -489,7 +487,7 @@ class TestimonialAdmin(admin.ModelAdmin):
         if obj.avatar:
             return format_html(
                 '<img src="{}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 50%; border: 3px solid #053e91;" />', 
-                obj.avatar.url
+                obj.avatar.url  # FIXED: Use direct .url
             )
         return format_html(
             '<div style="width: 150px; height: 150px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #053e91; font-weight: bold; font-size: 24px; border: 3px solid #053e91;">{}</div>',
@@ -535,7 +533,7 @@ class TestimonialAdmin(admin.ModelAdmin):
 @admin.register(NewsletterContent)
 class NewsletterContentAdmin(admin.ModelAdmin):
     list_display = ['title', 'image_preview', 'pdf_preview', 'is_active_badge', 'created_at_display', 'updated_at_display']
-    list_display_links = ['title']  # FIXED: Added list_display_links
+    list_display_links = ['title']
     search_fields = ['title', 'subtitle']
     readonly_fields = ['created_at', 'updated_at', 'image_preview_large', 'benefits_preview', 'pdf_link']
     actions = [make_active, make_inactive]
@@ -544,7 +542,7 @@ class NewsletterContentAdmin(admin.ModelAdmin):
         if obj.image:
             return format_html(
                 '<img src="{}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;" />', 
-                obj.image.url
+                obj.image.url  # FIXED: Use direct .url
             )
         return format_html('<div style="width: 50px; height: 50px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 4px;">No Image</div>')
     image_preview.short_description = 'Image'
@@ -553,7 +551,7 @@ class NewsletterContentAdmin(admin.ModelAdmin):
         if obj.image:
             return format_html(
                 '<img src="{}" style="max-width: 400px; max-height: 300px; object-fit: contain; border-radius: 8px; border: 2px solid #ddd;" />', 
-                obj.image.url
+                obj.image.url  # FIXED: Use direct .url
             )
         return "No image uploaded"
     image_preview_large.short_description = 'Large Preview'
@@ -562,7 +560,7 @@ class NewsletterContentAdmin(admin.ModelAdmin):
         if obj.pdf_file:
             return format_html(
                 '<a href="{}" target="_blank" style="background: #dc3545; color: white; padding: 3px 8px; border-radius: 12px; font-size: 12px; text-decoration: none;">📄 View PDF</a>',
-                obj.pdf_file.url
+                obj.pdf_file.url  # FIXED: Use direct .url
             )
         return format_html(
             '<span style="background: #6c757d; color: white; padding: 3px 8px; border-radius: 12px; font-size: 12px;">No PDF</span>'
@@ -573,7 +571,7 @@ class NewsletterContentAdmin(admin.ModelAdmin):
         if obj.pdf_file:
             return format_html(
                 '<a href="{}" target="_blank" class="button">Open PDF in new tab</a>',
-                obj.pdf_file.url
+                obj.pdf_file.url  # FIXED: Use direct .url
             )
         return "No PDF uploaded"
     pdf_link.short_description = 'PDF Link'
@@ -644,8 +642,8 @@ class NewsletterContentAdmin(admin.ModelAdmin):
 class ContactSubmissionAdmin(admin.ModelAdmin):
     list_display = ['id', 'full_name', 'email', 'organization', 'event_type', 'status', 'submitted_at']
     list_filter = ['status', 'event_type', 'submitted_at']
-    list_editable = ['status']  # NOW IT'S IN list_display
-    list_display_links = ['id']  # Make ID clickable
+    list_editable = ['status']
+    list_display_links = ['id']
     search_fields = ['full_name', 'email', 'organization', 'event_details']
     readonly_fields = ['submitted_at', 'contacted_at', 'event_details_display']
     date_hierarchy = 'submitted_at'
@@ -680,7 +678,7 @@ class ContactSubmissionAdmin(admin.ModelAdmin):
             'classes': ('wide',)
         }),
         ('Event Details', {
-            'fields': ('event_type', 'event_details_preview'),
+            'fields': ('event_type', 'event_details_display'),
             'classes': ('wide',)
         }),
         ('Status & Follow-up', {
@@ -697,21 +695,17 @@ class ContactSubmissionAdmin(admin.ModelAdmin):
         if 'status' in form.changed_data and obj.status == 'contacted':
             obj.contacted_at = timezone.now()
         super().save_model(request, obj, form, change)
+
 # ============ NEWSLETTER SUBSCRIPTION ADMIN ============
 @admin.register(NewsletterSubscription)
 class NewsletterSubscriptionAdmin(admin.ModelAdmin):
-    # Use actual field names from your model
-    list_display = ['email', 'name', 'source', 'is_active', 'subscribed_at_display']
-    list_filter = ['source', 'is_active']  # Removed submitted_at from list_filter
-    # list_editable = ['is_active']  # REMOVED FOR NOW - fix list_display first
+    list_display = ['email', 'name', 'source_display', 'status_display', 'subscribed_at_display']
+    list_filter = ['source', 'is_active']
     list_display_links = ['email']
     search_fields = ['email', 'name']
-    # readonly_fields = ['submitted_at']  # REMOVED - check if field exists
-    # date_hierarchy = 'submitted_at'  # REMOVED - check if field exists
     actions = [make_active, make_inactive, 'export_emails']
     list_per_page = 50
     
-    # Custom method for source (if you want badges)
     def source_display(self, obj):
         colors = {
             'newsletter_section': '#28a745',
@@ -726,7 +720,6 @@ class NewsletterSubscriptionAdmin(admin.ModelAdmin):
         )
     source_display.short_description = 'Source'
     
-    # Custom method for status
     def status_display(self, obj):
         if obj.is_active:
             return format_html(
@@ -737,23 +730,9 @@ class NewsletterSubscriptionAdmin(admin.ModelAdmin):
         )
     status_display.short_description = 'Status'
     
-    # Check what date field your model actually has
     def subscribed_at_display(self, obj):
-        # Try different possible field names
-        date_field = None
-        
-        # Check common date field names
-        if hasattr(obj, 'created_at'):
-            date_field = obj.created_at
-        elif hasattr(obj, 'submitted_at'):
-            date_field = obj.submitted_at
-        elif hasattr(obj, 'date_joined'):
-            date_field = obj.date_joined
-        elif hasattr(obj, 'timestamp'):
-            date_field = obj.timestamp
-        
-        if date_field:
-            return date_field.strftime('%Y-%m-%d %H:%M')
+        if obj.created_at:
+            return obj.created_at.strftime('%Y-%m-%d %H:%M')
         return 'N/A'
     subscribed_at_display.short_description = 'Subscribed'
     
@@ -765,7 +744,6 @@ class NewsletterSubscriptionAdmin(admin.ModelAdmin):
         return response
     export_emails.short_description = "📧 Export selected emails"
     
-    # Simplified fieldsets - adjust based on actual model fields
     fieldsets = (
         ('Subscriber Information', {
             'fields': ('name', 'email', 'source'),
@@ -776,21 +754,13 @@ class NewsletterSubscriptionAdmin(admin.ModelAdmin):
             'classes': ('wide',)
         }),
     )
-    
-    # Add this method to check what fields your model has
-    def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
-        # Debug: print available fields
-        print("Available fields in model:", [f.name for f in self.model._meta.get_fields()])
-        return form
 
 # ============ FORM SUBMISSION ADMIN ============
 @admin.register(FormSubmission)
 class FormSubmissionAdmin(admin.ModelAdmin):
-    list_display = ['source_badge', 'submitted_at_display', 'processed_display', 'form_data_preview']  # FIXED: Changed to processed_display
+    list_display = ['source_badge', 'submitted_at_display', 'processed_display', 'form_data_preview']
     list_filter = ['source', 'processed', 'submitted_at']
-    list_editable = []  # FIXED: Empty list_editable
-    list_display_links = ['source_badge']  # ADDED: Make source_badge clickable
+    list_display_links = ['source_badge']
     search_fields = ['source', 'form_data']
     readonly_fields = ['submitted_at', 'form_data_display']
     date_hierarchy = 'submitted_at'
@@ -811,7 +781,7 @@ class FormSubmissionAdmin(admin.ModelAdmin):
         )
     source_badge.short_description = 'Source'
     
-    def processed_display(self, obj):  # FIXED: Renamed from processed_badge
+    def processed_display(self, obj):
         if obj.processed:
             return format_html(
                 '<span style="background: #28a745; color: white; padding: 3px 8px; border-radius: 12px; font-size: 12px;">Processed</span>'
