@@ -39,37 +39,33 @@ class HeroImage(models.Model):
 
 
 # ============ ABOUT SECTION ============
-# models.py - Add this at the top
-from django.utils.html import format_html  # ADD THIS LINE
-from django.db import models
-
 # ============ ABOUT SECTION ============
 class AboutSection(models.Model):
     title = models.CharField(max_length=200, default='Pamela Robinson')
     
-    # CHANGE THIS FIELD: Add help_text for formatting
     content = models.TextField(
-        default='Pamela Robinson is a keynote speaker, corporate and leadership trainer, founder of Fusion Force and a recognized expert in sales and marketing support for hospitality companies.',
+        default='Pamela Robinson is a keynote speaker...',
         help_text="""Format your content like this:
         
         **BOLD TITLE HERE**
-        This is the paragraph text that goes under the bold title.
-        You can have multiple lines here.
+        This is the paragraph text...
         
         **ANOTHER BOLD TITLE**
-        Another paragraph here with more details.
-        Multiple lines are supported.
+        Another paragraph here...
         
         • Bullet point 1
-        • Bullet point 2
-        • Bullet point 3
-        
-        Use **double asterisks** for bold titles.
-        Use • for bullet points.
-        Leave empty line between sections."""
+        • Bullet point 2"""
     )
     
     image = models.ImageField(upload_to='about/', blank=True, null=True)
+    # ADD SECOND IMAGE FIELD
+    image_2 = models.ImageField(
+        upload_to='about/', 
+        blank=True, 
+        null=True,
+        help_text="Second image that appears when content is long (3+ sections)"
+    )
+    
     bullet_points = models.TextField(
         default="Keynote Speaker\nLeadership Trainer\nHospitality Expert\nGlobal Experience",
         help_text="Enter each bullet point on a new line"
@@ -84,7 +80,27 @@ class AboutSection(models.Model):
             return [point.strip() for point in self.bullet_points.split('\n') if point.strip()]
         return []
     
-    # ADD THIS NEW PROPERTY for formatted content
+    # ADD THIS PROPERTY TO COUNT SECTIONS
+    @property
+    def has_long_content(self):
+        """Check if content has 3 or more sections (for showing second image)"""
+        if not self.content:
+            return False
+        
+        lines = self.content.strip().split('\n')
+        section_count = 0
+        
+        for line in lines:
+            line = line.strip()
+            # Count bold titles (**text**)
+            if line.startswith('**') and line.endswith('**'):
+                section_count += 1
+            # Count bullet point sections
+            elif line.startswith('•') and section_count == 0:
+                section_count = 1
+        
+        return section_count >= 3
+    
     @property
     def formatted_content(self):
         """Convert the content with **bold** titles and • bullets to HTML"""
@@ -99,41 +115,33 @@ class AboutSection(models.Model):
         for line in lines:
             line = line.strip()
             
-            # Check for bold title (starts and ends with **)
             if line.startswith('**') and line.endswith('**'):
-                # Close previous paragraph if open
                 if current_paragraph:
                     html_parts.append(f'<p class="mb-3">{" ".join(current_paragraph)}</p>')
                     current_paragraph = []
                 
-                # Add the bold title
-                title_text = line[2:-2].strip()  # Remove **
+                title_text = line[2:-2].strip()
                 html_parts.append(f'<h4 class="mt-4 mb-2" style="color: #053e91; font-weight: 700;">{title_text}</h4>')
                 in_paragraph = False
             
-            # Check for bullet point
             elif line.startswith('•'):
-                # Close previous paragraph if open
                 if current_paragraph:
                     html_parts.append(f'<p class="mb-3">{" ".join(current_paragraph)}</p>')
                     current_paragraph = []
                 
-                bullet_text = line[1:].strip()  # Remove •
+                bullet_text = line[1:].strip()
                 html_parts.append(f'<p class="mb-2"><i class="fa fa-circle text-primary me-2" style="font-size: 6px;"></i>{bullet_text}</p>')
                 in_paragraph = False
             
-            # Regular paragraph text
             elif line:
                 current_paragraph.append(line)
                 in_paragraph = True
             
-            # Empty line - end current paragraph
             elif not line and current_paragraph:
                 html_parts.append(f'<p class="mb-3">{" ".join(current_paragraph)}</p>')
                 current_paragraph = []
                 in_paragraph = False
         
-        # Close any remaining paragraph
         if current_paragraph:
             html_parts.append(f'<p class="mb-3">{" ".join(current_paragraph)}</p>')
         

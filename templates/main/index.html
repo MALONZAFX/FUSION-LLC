@@ -561,21 +561,35 @@
     </div>
     <!-- Hero Section End - Mobile Version -->
     
-    
     <!-- About Start -->
 <div class="container-xxl py-5" id="about">
     <div class="container">
         <div class="row g-5">
-            <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.1s">
-                <div class="position-relative" style="border-radius: 15px; overflow: hidden; max-height: 450px;">
-                    {% if about_section and about_section.image %}
-                        <img class="img-fluid w-100" src="{{ about_section.image.url }}" alt="Pamela Robinson - Founder of Fusion Force" style="object-fit: cover; width: 100%; height: 450px;">
-                    {% else %}
-                        <img class="img-fluid w-100" src="{% static 'images/Speech.png' %}" alt="Pamela Robinson - Founder of Fusion Force" style="object-fit: cover; width: 100%; height: 450px;">
-                    {% endif %}
+            <!-- LEFT COLUMN: Images -->
+            <div class="col-lg-6">
+                <!-- Main Image (Always shows) -->
+                <div class="wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="position-relative" style="border-radius: 15px; overflow: hidden; max-height: 450px; margin-bottom: 20px;">
+                        {% if about_section and about_section.image %}
+                            <img class="img-fluid w-100" src="{{ about_section.image.url }}" alt="Pamela Robinson - Founder of Fusion Force" style="object-fit: cover; width: 100%; height: 450px;">
+                        {% else %}
+                            <img class="img-fluid w-100" src="{% static 'images/Speech.png' %}" alt="Pamela Robinson - Founder of Fusion Force" style="object-fit: cover; width: 100%; height: 450px;">
+                        {% endif %}
+                    </div>
                 </div>
+                
+                <!-- Second Image (Only shows when content is long) -->
+                {% if about_section and about_section.has_long_content and about_section.image_2 %}
+                <div class="wow fadeInUp" data-wow-delay="0.2s" id="second-image-container">
+                    <div class="position-relative" style="border-radius: 15px; overflow: hidden; max-height: 350px;">
+                        <img class="img-fluid w-100" src="{{ about_section.image_2.url }}" alt="Pamela Robinson - Additional Image" style="object-fit: cover; width: 100%; height: 350px;">
+                    </div>
+                </div>
+                {% endif %}
             </div>
-            <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.3s" style="margin-top:px;">
+            
+            <!-- RIGHT COLUMN: Content -->
+            <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.3s" style="margin-top: 20px;">
                 <h6 class="section-title bg-white text-start text-primary pe-3">About Pamela</h6>
                 <h1 class="mb-4">Pamela Robinson</h1>
                 
@@ -658,6 +672,22 @@
         font-size: 6px !important;
     }
     
+    /* Second Image Animation */
+    #second-image-container {
+        animation: fadeIn 0.8s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
     /* Responsive adjustments */
     @media (max-width: 768px) {
         .about-content h4 {
@@ -669,8 +699,13 @@
             font-size: 0.95rem !important;
         }
         
-        .col-lg-6.wow.fadeInUp[style*="margin-top:135px"] {
+        .col-lg-6.wow.fadeInUp[style*="margin-top:20px"] {
             margin-top: 30px !important;
+        }
+        
+        /* Stack images on mobile */
+        .col-lg-6:first-child {
+            margin-bottom: 30px;
         }
     }
     
@@ -681,6 +716,15 @@
         
         .about-content p {
             font-size: 0.9rem !important;
+        }
+        
+        /* Adjust image heights for mobile */
+        .position-relative[style*="max-height: 450px"] {
+            max-height: 350px !important;
+        }
+        
+        .position-relative[style*="max-height: 350px"] {
+            max-height: 300px !important;
         }
     }
     
@@ -693,6 +737,11 @@
         
         .about-content .fa-circle {
             color: #000 !important;
+        }
+        
+        /* Hide second image when printing */
+        #second-image-container {
+            display: none !important;
         }
     }
 </style>

@@ -186,13 +186,16 @@ class HeroImageAdmin(admin.ModelAdmin):
     )
 
 # ============ ABOUT SECTION ADMIN ============
+# ============ ABOUT SECTION ADMIN ============
 @admin.register(AboutSection)
 class AboutSectionAdmin(admin.ModelAdmin):
     list_display = ['title', 'image_preview', 'is_active_badge', 'created_at_display', 'updated_at_display']
     list_display_links = ['title']
     search_fields = ['title', 'content']
-    readonly_fields = ['created_at', 'updated_at', 'image_preview_large', 'bullet_points_preview', 'content_preview_field']  # Changed to content_preview_field
+    readonly_fields = ['created_at', 'updated_at', 'image_preview_large', 'image_2_preview_large', 'bullet_points_preview', 'content_preview_field']
     actions = [make_active, make_inactive, duplicate_items]
+    
+    # Add these missing methods:
     
     def image_preview(self, obj):
         if obj.image:
@@ -200,9 +203,28 @@ class AboutSectionAdmin(admin.ModelAdmin):
                 '<img src="{}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;" />', 
                 obj.image.url
             )
-        return format_html('<div style="width: 50px; height: 50px; background: #000000; display: flex; align-items: center; justify-content: center; border-radius: 4px;">No Image</div>')
+        return format_html('<div style="width: 50px; height: 50px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 4px;">No Image</div>')
     image_preview.short_description = 'Image'
     
+    def is_active_badge(self, obj):
+        if obj.is_active:
+            return format_html(
+                '<span style="background: #28a745; color: white; padding: 3px 8px; border-radius: 12px; font-size: 12px;">Active</span>'
+            )
+        return format_html(
+            '<span style="background: #6c757d; color: white; padding: 3px 8px; border-radius: 12px; font-size: 12px;">Inactive</span>'
+        )
+    is_active_badge.short_description = 'Status'
+    
+    def created_at_display(self, obj):
+        return obj.created_at.strftime('%Y-%m-%d %H:%M')
+    created_at_display.short_description = 'Created At'
+    
+    def updated_at_display(self, obj):
+        return obj.updated_at.strftime('%Y-%m-%d %H:%M')
+    updated_at_display.short_description = 'Updated At'
+    
+    # Already have this one but keeping for completeness:
     def image_preview_large(self, obj):
         if obj.image:
             return format_html(
@@ -210,77 +232,57 @@ class AboutSectionAdmin(admin.ModelAdmin):
                 obj.image.url
             )
         return "No image uploaded"
-    image_preview_large.short_description = 'Large Preview'
+    image_preview_large.short_description = 'Image Preview'
     
-    def is_active_badge(self, obj):
-        if obj.is_active:
-            return format_html(
-                '<span style="background: #28a745; color: #000; padding: 3px 8px; border-radius: 12px; font-size: 12px;">Active</span>'
-            )
-        return format_html(
-            '<span style="background: #6c757d; color: #000; padding: 3px 8px; border-radius: 12px; font-size: 12px;">Inactive</span>'
-        )
-    is_active_badge.short_description = 'Status'
-    
+    # Add this missing method:
     def bullet_points_preview(self, obj):
-        if obj.bullet_points_list:
-            html = '<div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6;">'
-            html += '<h4 style="margin-top: 0; color: #053e91;">Bullet Points Preview:</h4>'
-            html += '<ul style="margin-bottom: 0;">'
-            for point in obj.bullet_points_list:
-                html += f'<li style="margin-bottom: 5px;">{point}</li>'
+        if obj.bullet_points:
+            points = obj.bullet_points.split('\n')
+            html = '<div style="background: #f8f9fa; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">'
+            html += '<strong>Bullet Points Preview:</strong><ul style="margin: 5px 0 0 20px;">'
+            for point in points:
+                if point.strip():
+                    html += f'<li>{point.strip()}</li>'
             html += '</ul></div>'
             return format_html(html)
-        return "No bullet points defined"
-    bullet_points_preview.short_description = 'Preview'
+        return "No bullet points"
+    bullet_points_preview.short_description = 'Bullet Points Preview'
     
-    # RENAME THIS METHOD to avoid conflict
+    # Add this missing method:
     def content_preview_field(self, obj):
-        """Show a preview of the formatted content"""
-        if not obj.content:
-            return "No content"
-        
-        preview_html = f'<div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; max-height: 400px; overflow-y: auto;">'
-        preview_html += '<h4 style="margin-top: 0; color: #053e91; border-bottom: 2px solid #053e91; padding-bottom: 10px; margin-bottom: 15px;">Content Preview (How it will appear on website):</h4>'
-        
-        # Show the formatted content
-        preview_html += obj.formatted_content
-        
-        # Show the raw content for reference
-        preview_html += '<hr style="margin: 20px 0; border-color: #ddd;">'
-        preview_html += '<h5 style="color: #666; margin-bottom: 10px;">Raw Content (for editing):</h5>'
-        preview_html += f'<pre style="background: white; padding: 15px; border-radius: 5px; border: 1px solid #ddd; font-size: 12px; white-space: pre-wrap; margin: 0; font-family: monospace; color: #333;">{obj.content}</pre>'
-        
-        preview_html += '<div style="margin-top: 20px; padding: 15px; background: #e7f3ff; border-radius: 8px; border-left: 4px solid #053e91;">'
-        preview_html += '<h5 style="margin-top: 0; color: #053e91;">Formatting Guide:</h5>'
-        preview_html += '<ul style="margin-bottom: 0; color: #333;">'
-        preview_html += '<li><strong>Bold Titles:</strong> Use **Your Title Here**</li>'
-        preview_html += '<li><strong>Bullet Points:</strong> Start with • (dot symbol)</li>'
-        preview_html += '<li><strong>Paragraphs:</strong> Just type normally</li>'
-        preview_html += '<li><strong>Empty Lines:</strong> Create space between sections</li>'
-        preview_html += '</ul></div>'
-        
-        preview_html += '</div>'
-        return format_html(preview_html)
+        if obj.content:
+            # Truncate content for preview
+            preview = obj.content[:150] + '...' if len(obj.content) > 150 else obj.content
+            return format_html(
+                '<div style="background: #f8f9fa; padding: 10px; border-radius: 5px; border: 1px solid #ddd; max-width: 600px; max-height: 200px; overflow: auto;">{}</div>',
+                preview
+            )
+        return "No content"
     content_preview_field.short_description = 'Content Preview'
     
-    def created_at_display(self, obj):
-        return obj.created_at.strftime('%Y-%m-%d')
-    created_at_display.short_description = 'Created'
+    # Already have this one but keeping for completeness:
+    def image_2_preview_large(self, obj):
+        if obj.image_2:
+            return format_html(
+                '<img src="{}" style="max-width: 400px; max-height: 300px; object-fit: contain; border-radius: 8px; border: 2px solid #ddd; margin-top: 10px;" />', 
+                obj.image_2.url
+            )
+        return "No second image uploaded"
+    image_2_preview_large.short_description = 'Second Image Preview'
     
-    def updated_at_display(self, obj):
-        return obj.updated_at.strftime('%Y-%m-%d %H:%M')
-    updated_at_display.short_description = 'Updated'
-    
-    # UPDATE THE FIELDSETS to include content preview
     fieldsets = (
         ('About Content', {
             'fields': ('title', 'content', 'content_preview_field'),
-            'description': 'Format your content with **bold titles** and bullet points (•). See preview below for formatting guide.',
+            'description': 'Format your content with **bold titles** and bullet points (•). Second image appears automatically when you have 3+ sections.',
             'classes': ('wide',)
         }),
-        ('Image', {
+        ('Main Image', {
             'fields': ('image', 'image_preview_large'),
+            'classes': ('wide',)
+        }),
+        ('Second Image (Shows when content is long)', {
+            'fields': ('image_2', 'image_2_preview_large'),
+            'description': 'Upload a second image that will automatically appear when content has 3+ sections.',
             'classes': ('wide',)
         }),
         ('Bullet Points', {
@@ -297,11 +299,6 @@ class AboutSectionAdmin(admin.ModelAdmin):
             'classes': ('collapse', 'wide')
         }),
     )
-    
-    def has_add_permission(self, request):
-        # Only allow one AboutSection object
-        return AboutSection.objects.count() == 0
-
 # ============ SERVICE ADMIN ============
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
