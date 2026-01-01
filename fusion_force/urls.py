@@ -9,6 +9,9 @@ urlpatterns = [
     path('', include('main.urls')),
 ]
 
-# SERVE MEDIA FILES IN DEVELOPMENT
+# 🔥 CRITICAL FIX: ADD BOTH STATIC AND MEDIA FILES 🔥
 if settings.DEBUG:
+    # This serves static files during development
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    # This serves media files during development  
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

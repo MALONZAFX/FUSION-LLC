@@ -1,4 +1,6 @@
+from django.utils.html import format_html
 from django.db import models
+
 
 # ============ SITE SETTINGS ============
 class SiteSettings(models.Model):
@@ -35,10 +37,38 @@ class HeroImage(models.Model):
     def __str__(self):
         return f"{self.title} ({self.get_position_display()})"
 
+
+# ============ ABOUT SECTION ============
+# models.py - Add this at the top
+from django.utils.html import format_html  # ADD THIS LINE
+from django.db import models
+
 # ============ ABOUT SECTION ============
 class AboutSection(models.Model):
     title = models.CharField(max_length=200, default='Pamela Robinson')
-    content = models.TextField(default='Pamela Robinson is a keynote speaker, corporate and leadership trainer, founder of Fusion Force and a recognized expert in sales and marketing support for hospitality companies.')
+    
+    # CHANGE THIS FIELD: Add help_text for formatting
+    content = models.TextField(
+        default='Pamela Robinson is a keynote speaker, corporate and leadership trainer, founder of Fusion Force and a recognized expert in sales and marketing support for hospitality companies.',
+        help_text="""Format your content like this:
+        
+        **BOLD TITLE HERE**
+        This is the paragraph text that goes under the bold title.
+        You can have multiple lines here.
+        
+        **ANOTHER BOLD TITLE**
+        Another paragraph here with more details.
+        Multiple lines are supported.
+        
+        • Bullet point 1
+        • Bullet point 2
+        • Bullet point 3
+        
+        Use **double asterisks** for bold titles.
+        Use • for bullet points.
+        Leave empty line between sections."""
+    )
+    
     image = models.ImageField(upload_to='about/', blank=True, null=True)
     bullet_points = models.TextField(
         default="Keynote Speaker\nLeadership Trainer\nHospitality Expert\nGlobal Experience",
@@ -53,6 +83,61 @@ class AboutSection(models.Model):
         if self.bullet_points:
             return [point.strip() for point in self.bullet_points.split('\n') if point.strip()]
         return []
+    
+    # ADD THIS NEW PROPERTY for formatted content
+    @property
+    def formatted_content(self):
+        """Convert the content with **bold** titles and • bullets to HTML"""
+        if not self.content:
+            return ""
+        
+        lines = self.content.strip().split('\n')
+        html_parts = []
+        in_paragraph = False
+        current_paragraph = []
+        
+        for line in lines:
+            line = line.strip()
+            
+            # Check for bold title (starts and ends with **)
+            if line.startswith('**') and line.endswith('**'):
+                # Close previous paragraph if open
+                if current_paragraph:
+                    html_parts.append(f'<p class="mb-3">{" ".join(current_paragraph)}</p>')
+                    current_paragraph = []
+                
+                # Add the bold title
+                title_text = line[2:-2].strip()  # Remove **
+                html_parts.append(f'<h4 class="mt-4 mb-2" style="color: #053e91; font-weight: 700;">{title_text}</h4>')
+                in_paragraph = False
+            
+            # Check for bullet point
+            elif line.startswith('•'):
+                # Close previous paragraph if open
+                if current_paragraph:
+                    html_parts.append(f'<p class="mb-3">{" ".join(current_paragraph)}</p>')
+                    current_paragraph = []
+                
+                bullet_text = line[1:].strip()  # Remove •
+                html_parts.append(f'<p class="mb-2"><i class="fa fa-circle text-primary me-2" style="font-size: 6px;"></i>{bullet_text}</p>')
+                in_paragraph = False
+            
+            # Regular paragraph text
+            elif line:
+                current_paragraph.append(line)
+                in_paragraph = True
+            
+            # Empty line - end current paragraph
+            elif not line and current_paragraph:
+                html_parts.append(f'<p class="mb-3">{" ".join(current_paragraph)}</p>')
+                current_paragraph = []
+                in_paragraph = False
+        
+        # Close any remaining paragraph
+        if current_paragraph:
+            html_parts.append(f'<p class="mb-3">{" ".join(current_paragraph)}</p>')
+        
+        return format_html(''.join(html_parts))
 
     def __str__(self):
         return self.title

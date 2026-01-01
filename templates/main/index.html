@@ -561,181 +561,142 @@
     </div>
     <!-- Hero Section End - Mobile Version -->
     
-    <!-- About Start -->
-    <div class="container-xxl py-5" id="about">
-        <div class="container">
-            <div class="row g-5">
-                <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.1s">
-                    <div class="position-relative" style="border-radius: 15px; overflow: hidden; max-height: 450px;">
-                        {% if about_section and about_section.image %}
-                            <img class="img-fluid w-100" src="{{ about_section.image.url }}" alt="Pamela Robinson - Founder of Fusion Force" style="object-fit: cover; width: 100%; height: 450px;">
-                        {% else %}
-                            <img class="img-fluid w-100" src="{% static 'images/Speech.png' %}" alt="Pamela Robinson - Founder of Fusion Force" style="object-fit: cover; width: 100%; height: 450px;">
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.3s" style="margin-top:135px;">
-                    <h6 class="section-title bg-white text-start text-primary pe-3">About Pamela</h6>
-                    <h1 class="mb-4">Pamela Robinson</h1>
-                    {% if about_section and about_section.content %}
-                        <p class="mb-4">{{ about_section.content }}</p>
-                    {% else %}
-                        <p class="mb-4">Pamela Robinson is a keynote speaker, corporate and leadership trainer, founder of <strong>Fusion Force</strong> and a recognized expert in sales and marketing support for hospitality companies.</p>
-                    {% endif %}
-                    <div class="row gy-2 gx-4 mb-4">
-                        {% if about_section and about_section.bullet_points_list %}
-                            {% for point in about_section.bullet_points_list %}
-                            <div class="col-sm-6">
-                                <p class="mb-0"><i class="fa fa-arrow-right text-primary me-2"></i>{{ point }}</p>
-                            </div>
-                            {% endfor %}
-                        {% else %}
-                            <!-- Default bullet points -->
-                            <div class="col-sm-6"><p class="mb-0"><i class="fa fa-arrow-right text-primary me-2"></i>Keynote Speaker</p></div>
-                            <div class="col-sm-6"><p class="mb-0"><i class="fa fa-arrow-right text-primary me-2"></i>Leadership Trainer</p></div>
-                            <div class="col-sm-6"><p class="mb-0"><i class="fa fa-arrow-right text-primary me-2"></i>Hospitality Expert</p></div>
-                            <div class="col-sm-6"><p class="mb-0"><i class="fa fa-arrow-right text-primary me-2"></i>Global Experience</p></div>
-                        {% endif %}
-                    </div>
-                    <a class="btn btn-primary py-3 px-5 mt-2" href="#contact">Book Pamela</a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- About End -->
     
-    <!-- Services Start -->
-    <div class="container-xxl py-5" id="services">
-        <div class="container">
-            <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
-                <h6 class="section-title bg-white text-center text-primary px-3">Transform Your Organization</h6>
-                <h1 class="mb-5">Signature Services</h1>
-                <p class="lead mb-5">Inspiring talks. Transformative training. Strategic guidance.</p>
+    <!-- About Start -->
+<div class="container-xxl py-5" id="about">
+    <div class="container">
+        <div class="row g-5">
+            <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.1s">
+                <div class="position-relative" style="border-radius: 15px; overflow: hidden; max-height: 450px;">
+                    {% if about_section and about_section.image %}
+                        <img class="img-fluid w-100" src="{{ about_section.image.url }}" alt="Pamela Robinson - Founder of Fusion Force" style="object-fit: cover; width: 100%; height: 450px;">
+                    {% else %}
+                        <img class="img-fluid w-100" src="{% static 'images/Speech.png' %}" alt="Pamela Robinson - Founder of Fusion Force" style="object-fit: cover; width: 100%; height: 450px;">
+                    {% endif %}
+                </div>
             </div>
-
-            <!-- Key Services Grid -->
-            <div class="row g-4">
-                {% if services %}
-                    {% for service in services %}
-                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.{{ forloop.counter }}s">
-                        <div class="service-simple text-center p-4 h-100">
-                            <div class="service-icon mb-4">
-                                <i class="{{ service.icon }} fa-3x text-primary"></i>
-                            </div>
-                            <h4 class="mb-3">{{ service.title }}</h4>
-                            <p class="mb-4">{{ service.description }}</p>
-                            <div class="service-topics">
-                                {% for topic in service.topics_list %}
-                                    <span class="topic-tag">{{ topic }}</span>
-                                {% endfor %}
-                            </div>
-                            <a href="#contact" class="btn btn-primary mt-3">{{ service.button_text }}</a>
-                        </div>
+            <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.3s" style="margin-top:px;">
+                <h6 class="section-title bg-white text-start text-primary pe-3">About Pamela</h6>
+                <h1 class="mb-4">Pamela Robinson</h1>
+                
+                {% if about_section and about_section.formatted_content %}
+                    <div class="about-content mb-4">
+                        {{ about_section.formatted_content|safe }}
                     </div>
-                    {% endfor %}
                 {% else %}
-                    <!-- Default services if none uploaded -->
-                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                        <div class="service-simple text-center p-4 h-100">
-                            <div class="service-icon mb-4">
-                                <i class="fas fa-microphone fa-3x text-primary"></i>
-                            </div>
-                            <h4 class="mb-3">Keynote Speaking</h4>
-                            <p class="mb-4">Inspire your team with powerful messages that drive action and create lasting change.</p>
-                            <div class="service-topics">
-                                <span class="topic-tag">Emotional Intelligence</span>
-                                <span class="topic-tag">Leadership Trust</span>
-                                <span class="topic-tag">Guest Experience</span>
-                                <span class="topic-tag">Women in Leadership</span>
-                                <span class="topic-tag">Extraordinary Leadership</span>
-                            </div>
-                            <a href="#contact" class="btn btn-primary mt-3">Book Pamela</a>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.2s">
-                        <div class="service-simple text-center p-4 h-100">
-                            <div class="service-icon mb-4">
-                                <i class="fas fa-users fa-3x text-primary"></i>
-                            </div>
-                            <h4 class="mb-3">Corporate Training</h4>
-                            <p class="mb-4">Develop your team with proven frameworks that boost performance and engagement.</p>
-                            <div class="service-topics">
-                                <span class="topic-tag">Leadership Training</span>
-                                <span class="topic-tag">Customer Service Excellence</span>
-                                <span class="topic-tag">Team Collaboration</span>
-                                <span class="topic-tag">EQ Training</span>
-                                <span class="topic-tag">Workplace Etiquette</span>
-                            </div>
-                            <a href="#contact" class="btn btn-primary mt-3">Train My Team</a>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
-                        <div class="service-simple text-center p-4 h-100">
-                            <div class="service-icon mb-4">
-                                <i class="fas fa-chart-line fa-3x text-primary"></i>
-                            </div>
-                            <h4 class="mb-3">Sales & Marketing Support</h4>
-                            <p class="mb-4">Specialized support for hospitality businesses seeking to elevate sales and marketing performance.</p>
-                            <div class="service-topics">
-                                <span class="topic-tag">Sales Strategy</span>
-                                <span class="topic-tag">Increasing Market Share</span>
-                                <span class="topic-tag">Hospitality Excellence</span>
-                                <span class="topic-tag">Increasing Revenue Growth</span>
-                                <span class="topic-tag">Increasing Occupancy</span>
-                            </div>
-                            <a href="#contact" class="btn btn-primary mt-3">Get Expert Advice</a>
-                        </div>
+                    <!-- Default content if no formatted content exists -->
+                    <p class="mb-4">Pamela Robinson is a keynote speaker, corporate and leadership trainer, founder of <strong>Fusion Force</strong> and a recognized expert in sales and marketing support for hospitality companies.</p>
+                    
+                    <!-- Default formatted content example -->
+                    <div class="about-content mb-4">
+                        <h4 class="mt-4 mb-2" style="color: #053e91; font-weight: 700;">Professional Background</h4>
+                        <p class="mb-3">With over 15 years of experience in the hospitality industry, Pamela has established herself as a leading expert in sales and marketing support for luxury brands and corporate clients worldwide.</p>
+                        
+                        <h4 class="mt-4 mb-2" style="color: #053e91; font-weight: 700;">Leadership Philosophy</h4>
+                        <p class="mb-3">My approach to leadership is rooted in emotional intelligence and authentic connection. I believe that true transformation happens when leaders connect with both their teams and their own purpose.</p>
+                        
+                        <p class="mb-2"><i class="fa fa-circle text-primary me-2" style="font-size: 6px;"></i>Keynote Speaking for corporate events and conferences</p>
+                        <p class="mb-2"><i class="fa fa-circle text-primary me-2" style="font-size: 6px;"></i>Leadership Development and team training</p>
+                        <p class="mb-2"><i class="fa fa-circle text-primary me-2" style="font-size: 6px;"></i>Sales Strategy for hospitality businesses</p>
                     </div>
                 {% endif %}
-            </div>
-
-            <!-- Proven Results Counter Section -->
-            <div class="row mt-5 pt-5">
-                <div class="col-12 text-center">
-                    <h3 class="mb-4">Proven Results</h3>
-                    <div class="row g-4">
-                        {% if results %}
-                            {% for result in results %}
-                            <div class="col-md-3">
-                                <div class="impact-stat">
-                                    <h2 class="text-primary mb-1">{{ result.value }}</h2>
-                                    <p class="mb-0">{{ result.title }}</p>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        {% else %}
-                            <!-- Default results -->
-                            <div class="col-md-3">
-                                <div class="impact-stat">
-                                    <h2 class="text-primary mb-1">25%</h2>
-                                    <p class="mb-0">Productivity Increase</p>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="impact-stat">
-                                    <h2 class="text-primary mb-1">17%</h2>
-                                    <p class="mb-0">Satisfaction Boost</p>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="impact-stat">
-                                    <h2 class="text-primary mb-1">40%</h2>
-                                    <p class="mb-0">Team Collaboration</p>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="impact-stat">
-                                    <h2 class="text-primary mb-1">100+</h2>
-                                    <p class="mb-0">Organizations Transformed</p>
-                                </div>
-                            </div>
-                        {% endif %}
-                    </div>
+                
+                <!-- Bullet Points Section -->
+                <div class="row gy-2 gx-4 mb-4">
+                    {% if about_section and about_section.bullet_points_list %}
+                        {% for point in about_section.bullet_points_list %}
+                        <div class="col-sm-6">
+                            <p class="mb-0"><i class="fa fa-arrow-right text-primary me-2"></i>{{ point }}</p>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Default bullet points -->
+                        <div class="col-sm-6"><p class="mb-0"><i class="fa fa-arrow-right text-primary me-2"></i>Keynote Speaker</p></div>
+                        <div class="col-sm-6"><p class="mb-0"><i class="fa fa-arrow-right text-primary me-2"></i>Leadership Trainer</p></div>
+                        <div class="col-sm-6"><p class="mb-0"><i class="fa fa-arrow-right text-primary me-2"></i>Hospitality Expert</p></div>
+                        <div class="col-sm-6"><p class="mb-0"><i class="fa fa-arrow-right text-primary me-2"></i>Global Experience</p></div>
+                    {% endif %}
                 </div>
+                
+                <a class="btn btn-primary py-3 px-5 mt-2" href="#contact">Book Pamela</a>
             </div>
         </div>
     </div>
-    <!-- Services End -->
+</div>
+<!-- About End -->
+
+<style>
+    /* About section formatting styles */
+    .about-content h4 {
+        color: #053e91 !important;
+        font-weight: 700 !important;
+        margin-top: 1.5rem !important;
+        margin-bottom: 0.75rem !important;
+        font-size: 1.2rem !important;
+        line-height: 1.3 !important;
+    }
+    
+    .about-content h4:first-child {
+        margin-top: 0 !important;
+    }
+    
+    .about-content p {
+        margin-bottom: 1rem !important;
+        line-height: 1.6 !important;
+        color: #333 !important;
+        font-size: 1rem !important;
+    }
+    
+    .about-content p:last-child {
+        margin-bottom: 0 !important;
+    }
+    
+    .about-content .fa-circle {
+        color: #053e91 !important;
+        vertical-align: middle !important;
+        margin-right: 8px !important;
+        font-size: 6px !important;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .about-content h4 {
+            font-size: 1.1rem !important;
+            margin-top: 1.2rem !important;
+        }
+        
+        .about-content p {
+            font-size: 0.95rem !important;
+        }
+        
+        .col-lg-6.wow.fadeInUp[style*="margin-top:135px"] {
+            margin-top: 30px !important;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .about-content h4 {
+            font-size: 1rem !important;
+        }
+        
+        .about-content p {
+            font-size: 0.9rem !important;
+        }
+    }
+    
+    /* Print styles */
+    @media print {
+        .about-content h4 {
+            color: #000 !important;
+            font-weight: bold !important;
+        }
+        
+        .about-content .fa-circle {
+            color: #000 !important;
+        }
+    }
+</style>
+
 
     <!-- Gallery Start -->
     <div class="container-xxl py-5 category" id="events">

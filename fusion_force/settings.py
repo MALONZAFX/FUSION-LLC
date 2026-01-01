@@ -128,3 +128,19 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ========== STATIC FILES ==========
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# ADD THIS LINE - tells Django where to find static files
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',  # This is where your CSS, JS, images should be
+]
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+WHITENOISE_MANIFEST_STRICT = False
+
+print(f"✅ STATIC_URL: {STATIC_URL}")
+print(f"✅ STATIC_ROOT: {STATIC_ROOT}")
+print(f"✅ STATICFILES_DIRS: {STATICFILES_DIRS}")
