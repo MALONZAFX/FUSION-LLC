@@ -318,7 +318,7 @@
             
             .impact-stat {
                 margin-bottom: 30px;
-        }
+            }
         }
         
         /* Gallery styles */
@@ -473,10 +473,143 @@
         .wow.fadeInUp {
             animation-name: fadeInUp;
         }
+        
+        /* New styles for eBook and improved forms */
+        .ebook-gift-box {
+            border: 2px dashed #28a745;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #f8fff9 0%, #e8f5e9 100%);
+            padding: 25px;
+            margin: 25px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ebook-gift-box:before {
+            content: "🎁";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+        }
+        
+        .download-ebook-btn {
+            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .download-ebook-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
+            color: white;
+        }
+        
+        .download-ebook-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        
+        /* Improved form feedback */
+        .form-success-message {
+            display: none;
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border: 2px solid #28a745;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .form-error-message {
+            display: none;
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border: 2px solid #dc3545;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        /* Loading animations */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Toast notifications */
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            max-width: 400px;
+            animation: slideInRight 0.3s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Footer eBook Preview */
+        .ebook-preview {
+            border-left: 4px solid #28a745 !important;
+            transition: all 0.3s ease;
+        }
+
+        .ebook-preview:hover {
+            background: rgba(40, 167, 69, 0.1) !important;
+            transform: translateX(5px);
+        }
+
+        /* Footer eBook download button */
+        #footerEbookDownload .download-ebook-btn {
+            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        #footerEbookDownload .download-ebook-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
+            color: white;
+        }
+
+        /* Footer form styling */
+        #footerNewsletterForm .input-group {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        #footerNewsletterForm .form-control:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25);
+        }
     </style>
 </head>
 
 <body>
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 400px;"></div>
+    
     <!-- Navbar Start -->
     <nav class="navbar navbar-expand-lg bg-white navbar-light shadow sticky-top p-0">
         <a href="#home" class="navbar-brand d-flex align-items-center px-4 px-lg-5">
@@ -746,7 +879,6 @@
     }
 </style>
 
-
     <!-- Gallery Start -->
     <div class="container-xxl py-5 category" id="events">
         <div class="container">
@@ -1001,7 +1133,7 @@
     </div>
     <!-- Testimonial Slider End -->
 
-    <!-- Newsletter Section Start -->
+<!-- Newsletter Section Start - UPDATED WITH EBOOK FEATURE -->
 <div class="container-xxl py-5" id="newsletter">
     <div class="container">
         <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
@@ -1084,6 +1216,41 @@
                         {% endif %}
                     </div>
                     
+                    <!-- NEW: Free eBook Offer (Hidden by default) -->
+                    <div class="ebook-gift-box mb-4" id="ebookOffer" style="display: none;">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="me-3">
+                                <i class="fas fa-gift fa-2x text-success"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1 text-success">🎁 Free Gift for Subscribers!</h5>
+                                <p class="mb-0" id="ebookTitleText">
+                                    {% if free_ebook %}
+                                        Download "{{ free_ebook.title }}" - a free eBook from Pamela Robinson
+                                    {% else %}
+                                        Download our exclusive free eBook - a leadership guide from Pamela Robinson
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="text-center" id="ebookDownloadSection">
+                            {% if free_ebook and free_ebook.ebook_file %}
+                            <button class="btn download-ebook-btn btn-lg px-4 py-3" id="downloadEbookBtn" 
+                                    data-ebook-id="{{ free_ebook.id }}"
+                                    data-ebook-title="{{ free_ebook.title }}"
+                                    data-ebook-url="{{ free_ebook.ebook_file.url }}">
+                                <i class="fas fa-download me-2"></i>Download Your Free eBook
+                            </button>
+                            <p class="text-muted mt-2 mb-0 small">Available immediately after subscription</p>
+                            {% else %}
+                            <div class="alert alert-warning mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Free eBook will be available for download after subscription
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
                     <!-- Newsletter Form -->
                     <form id="newsletterSubscriptionForm" class="newsletter-form">
                         <!-- FormSubmit Configuration -->
@@ -1121,6 +1288,27 @@
                             </div>
                         </div>
                     </form>
+                    
+                    <!-- Subscription Status Messages -->
+                    <div class="form-success-message mt-3" id="subscriptionSuccessMessage">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle fa-2x text-success me-3"></i>
+                            <div>
+                                <h5 class="mb-1 text-success">Successfully Subscribed!</h5>
+                                <p class="mb-0">Thank you for joining our newsletter. Check above for your free eBook gift!</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-error-message mt-3" id="subscriptionErrorMessage">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle fa-2x text-danger me-3"></i>
+                            <div>
+                                <h5 class="mb-1 text-danger">Subscription Failed</h5>
+                                <p class="mb-0" id="errorMessageText">Please try again or contact us directly.</p>
+                            </div>
+                        </div>
+                    </div>
                     
                     <!-- Additional CTAs -->
                     <div class="row mt-4">
@@ -1178,14 +1366,12 @@
                         
                         <div class="mt-auto">
                             <div class="d-flex align-items-center mb-3">
-                                <i class="fas fa-phone fa-lg me-3"></i>
+                                <i class="fas fa-envelope fa-lg me-3"></i>
                                 <div>
-                                    <h6 class="mb-0">Direct Line</h6>
-                                    {% if site_settings and site_settings.contact_phone %}
-                                        <span class="text-white">{{ site_settings.contact_phone }}</span>
-                                    {% else %}
-                                        <span class="text-white">+1 (443) 545-4565</span>
-                                    {% endif %}
+                                    <h6 class="mb-0">Working Hours</h6>
+                                    
+                                        <span class="text-white">9AM-5PM</span>
+                                    
                                 </div>
                             </div>
                             <div class="d-flex align-items-center">
@@ -1267,6 +1453,28 @@
                                 </div>
                             </div>
                         </form>
+                        
+                        <!-- Booking Success Message -->
+                        <div class="form-success-message mt-4" id="bookingSuccessMessage" style="display: none;">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-check-circle fa-2x text-success me-3"></i>
+                                <div>
+                                    <h5 class="mb-1 text-success">Booking Request Sent!</h5>
+                                    <p class="mb-0">Thank you for your booking request! Pamela will review your details and get back to you within 24 hours.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Booking Error Message -->
+                        <div class="form-error-message mt-4" id="bookingErrorMessage" style="display: none;">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-exclamation-triangle fa-2x text-danger me-3"></i>
+                                <div>
+                                    <h5 class="mb-1 text-danger">Booking Failed</h5>
+                                    <p class="mb-0" id="bookingErrorText">Please try again or contact us directly.</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1314,24 +1522,14 @@
                                     <small class="text-muted">International Speaker</small>
                                 </div>
                             </div>
-                            <div class="d-flex align-items-center justify-content-center justify-content-md-start mb-3">
-                                <i class="fa fa-phone-alt me-3 text-primary fa-lg"></i>
-                                <div class="text-start">
-                                    {% if site_settings and site_settings.contact_phone %}
-                                        <p class="mb-0">{{ site_settings.contact_phone }}</p>
-                                    {% else %}
-                                        <p class="mb-0">+1 (443) 545-4565</p>
-                                    {% endif %}
-                                    <small class="text-muted">Available 9AM-6PM EST</small>
-                                </div>
-                            </div>
+                           
                             <div class="d-flex align-items-center justify-content-center justify-content-md-start mb-4">
                                 <i class="fa fa-envelope me-3 text-primary fa-lg"></i>
                                 <div class="text-start">
                                     {% if site_settings and site_settings.contact_email %}
                                         <p class="mb-0">{{ site_settings.contact_email }}</p>
                                     {% else %}
-                                        <p class="mb-0">info@fusionforce.com</p>
+                                        <p class="mb-0">pamelafusionforce@gmail.com</p>
                                     {% endif %}
                                     <small class="text-muted">Response within 24h</small>
                                 </div>
@@ -1355,11 +1553,30 @@
                     </div>
                 </div>
                 
-                <!-- Newsletter - Centered Column -->
+                <!-- Newsletter & Free eBook - Centered Column -->
                 <div class="col-lg-4 col-md-4">
                     <div class="text-center text-md-start">
-                        <h4 class="text-white mb-4">Stay Connected</h4>
-                        <p class="mb-4">Subscribe for exclusive speaking tips, industry insights, and updates on Pamela's upcoming engagements.</p>
+                        <h4 class="text-white mb-4">Stay Connected & Get Free eBook</h4>
+                        <p class="mb-4">Subscribe for exclusive speaking tips, industry insights, and receive Pamela's free leadership eBook as a welcome gift!</p>
+                        
+                        <!-- NEW: Free eBook Preview -->
+                        <div class="ebook-preview mb-4 bg-dark border border-secondary rounded p-3" id="footerEbookPreview">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="fas fa-book fa-2x text-primary"></i>
+                                </div>
+                                <div class="text-start">
+                                    <h6 class="text-white mb-1">🎁 Free eBook Gift</h6>
+                                    <p class="text-muted mb-0 small">
+                                        {% if free_ebook %}
+                                            "{{ free_ebook.title }}" - Get it free when you subscribe
+                                        {% else %}
+                                            "Free Leadership Guide" - Get it free when you subscribe
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                         
                         <!-- Newsletter Signup Form -->
                         <form id="footerNewsletterForm" class="newsletter-form">
@@ -1376,13 +1593,44 @@
                                        style="border-radius: 8px 0 0 8px; height: 50px;">
                                 <button type="submit" class="btn btn-primary px-4" 
                                         style="border-radius: 0 8px 8px 0; height: 50px;">
-                                    <i class="fas fa-paper-plane me-2"></i>Sign Up
+                                    <i class="fas fa-gift me-2"></i>Subscribe & Get eBook
                                 </button>
                             </div>
                             <small class="text-muted">
                                 <i class="fas fa-lock me-1"></i>We respect your privacy. Unsubscribe at any time.
                             </small>
                         </form>
+                        
+                        <!-- Footer Newsletter & eBook Status -->
+                        <div class="mt-3" id="footerNewsletterStatus" style="display: none;">
+                            <div class="alert alert-success mb-2">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <span id="footerStatusText">Thank you for subscribing!</span>
+                            </div>
+                            
+                            <!-- eBook Download Button (shown after successful subscription) -->
+                            <div id="footerEbookDownload" style="display: none;">
+                                {% if free_ebook and free_ebook.ebook_file %}
+                                <div class="text-center mt-3">
+                                    <button class="btn download-ebook-btn w-100 py-3" id="footerDownloadEbookBtn" 
+                                            data-ebook-id="{{ free_ebook.id }}"
+                                            data-ebook-title="{{ free_ebook.title }}"
+                                            data-ebook-url="{{ free_ebook.ebook_file.url }}">
+                                        <i class="fas fa-download me-2"></i>Download Your Free eBook Now
+                                    </button>
+                                    <p class="text-muted mt-2 mb-0 small">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Available exclusively for subscribers
+                                    </p>
+                                </div>
+                                {% else %}
+                                <div class="alert alert-info mt-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Your free eBook will be available for download after subscription confirmation.
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1406,7 +1654,7 @@
     </div>
     <!-- Footer End -->
 
-    <!-- Success Modals (keep these) -->
+    <!-- Success Modals -->
     <div class="modal fade" id="newsletterSuccessModal" tabindex="-1" aria-labelledby="newsletterSuccessModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
@@ -1480,15 +1728,55 @@
     <script src="{% static 'js/main.js' %}"></script>
     
     <!-- Combined JavaScript for all forms and functionality -->
-    <!-- Combined JavaScript for all forms and functionality -->
-<script>
+    <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const toastId = 'toast-' + Date.now();
+            const bgColor = type === 'success' ? 'bg-success' : 'bg-danger';
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            
+            const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center text-white ${bgColor} border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="fas ${icon} me-2"></i>${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('toastContainer').insertAdjacentHTML('afterbegin', toastHtml);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                const toast = document.getElementById(toastId);
+                if (toast) {
+                    toast.remove();
+                }
+            }, 5000);
+        }
+        
         // Initialize modals
         const newsletterModal = new bootstrap.Modal(document.getElementById('newsletterSuccessModal'));
         const contactModal = new bootstrap.Modal(document.getElementById('contactSuccessModal'));
         
         // Update copyright year
         document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        // Check if subscribed from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('subscribed') === 'true') {
+            showToast('Successfully subscribed to newsletter! Check for your free eBook.', 'success');
+            const ebookOffer = document.getElementById('ebookOffer');
+            if (ebookOffer) {
+                ebookOffer.style.display = 'block';
+                setTimeout(() => {
+                    ebookOffer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 500);
+            }
+        }
         
         // ============ BOOKING FORM HANDLER ============
         const bookingForm = document.getElementById('bookingForm');
@@ -1513,8 +1801,12 @@
                 // Get submit button and show loading
                 const submitBtn = document.getElementById('bookingSubmit');
                 const originalText = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+                submitBtn.innerHTML = '<span class="loading-spinner"></span> Processing...';
                 submitBtn.disabled = true;
+                
+                // Hide any previous messages
+                document.getElementById('bookingSuccessMessage').style.display = 'none';
+                document.getElementById('bookingErrorMessage').style.display = 'none';
                 
                 try {
                     // ============ 1. SEND TO FORMSPREE (EXTERNAL) ============
@@ -1542,11 +1834,20 @@
                     const djangoResult = await djangoResponse.json();
                     
                     if (formSubmitResult.success && djangoResult.status === 'success') {
-                        // Show success modal
-                        contactModal.show();
+                        // Show success message
+                        document.getElementById('bookingSuccessMessage').style.display = 'block';
+                        showToast('Booking request sent successfully! We\'ll contact you within 24 hours.', 'success');
                         
                         // Reset form
                         bookingForm.reset();
+                        
+                        // Scroll to success message
+                        setTimeout(() => {
+                            document.getElementById('bookingSuccessMessage').scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'center' 
+                            });
+                        }, 300);
                         
                         // Log success
                         console.log('Booking form submitted to BOTH services successfully');
@@ -1556,7 +1857,9 @@
                     
                 } catch (error) {
                     console.error('Error:', error);
-                    alert('An error occurred. Please try again later or contact us directly at info@fusionforce.com');
+                    document.getElementById('bookingErrorText').textContent = 'An error occurred. Please try again later or contact us directly at info@fusionforce.com';
+                    document.getElementById('bookingErrorMessage').style.display = 'block';
+                    showToast('Booking submission failed. Please try again.', 'error');
                 } finally {
                     // Reset button
                     submitBtn.innerHTML = originalText;
@@ -1585,8 +1888,12 @@
                 // Get submit button and show loading
                 const submitBtn = document.getElementById('newsletterSubmit');
                 const originalText = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Subscribing...';
+                submitBtn.innerHTML = '<span class="loading-spinner"></span> Subscribing...';
                 submitBtn.disabled = true;
+                
+                // Hide any previous messages
+                document.getElementById('subscriptionSuccessMessage').style.display = 'none';
+                document.getElementById('subscriptionErrorMessage').style.display = 'none';
                 
                 try {
                     // ============ 1. SEND TO FORMSPREE (EXTERNAL) ============
@@ -1614,8 +1921,20 @@
                     const djangoResult = await djangoResponse.json();
                     
                     if (formSubmitResult.success && (djangoResult.status === 'success' || djangoResult.status === 'info')) {
-                        // Show success modal
-                        newsletterModal.show();
+                        // Show ebook offer after successful subscription
+                        const ebookOffer = document.getElementById('ebookOffer');
+                        if (ebookOffer) {
+                            ebookOffer.style.display = 'block';
+                            
+                            // Scroll to ebook offer
+                            setTimeout(() => {
+                                ebookOffer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }, 500);
+                        }
+                        
+                        // Show success message
+                        document.getElementById('subscriptionSuccessMessage').style.display = 'block';
+                        showToast('Successfully subscribed! Check for your free eBook.', 'success');
                         
                         // Reset form
                         newsletterForm.reset();
@@ -1628,7 +1947,9 @@
                     
                 } catch (error) {
                     console.error('Error:', error);
-                    alert('An error occurred. Please try again later or contact us directly at info@fusionforce.com');
+                    document.getElementById('errorMessageText').textContent = 'An error occurred. Please try again later or contact us directly at info@fusionforce.com';
+                    document.getElementById('subscriptionErrorMessage').style.display = 'block';
+                    showToast('Subscription failed. Please try again.', 'error');
                 } finally {
                     // Reset button
                     submitBtn.innerHTML = originalText;
@@ -1637,7 +1958,7 @@
             });
         }
         
-        // ============ FOOTER NEWSLETTER FORM HANDLER ============
+        // ============ FOOTER NEWSLETTER FORM HANDLER (WITH EBOOK) ============
         const footerNewsletterForm = document.getElementById('footerNewsletterForm');
         if (footerNewsletterForm) {
             footerNewsletterForm.addEventListener('submit', async function(e) {
@@ -1657,8 +1978,14 @@
                 // Get submit button and show loading
                 const submitBtn = footerNewsletterForm.querySelector('button[type="submit"]');
                 const originalText = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>...';
+                submitBtn.innerHTML = '<span class="loading-spinner"></span>';
                 submitBtn.disabled = true;
+                
+                // Hide status messages
+                const statusDiv = document.getElementById('footerNewsletterStatus');
+                const ebookDownloadDiv = document.getElementById('footerEbookDownload');
+                statusDiv.style.display = 'none';
+                ebookDownloadDiv.style.display = 'none';
                 
                 try {
                     // ============ 1. SEND TO FORMSPREE (EXTERNAL) ============
@@ -1690,25 +2017,171 @@
                     const djangoResult = await djangoResponse.json();
                     
                     if (formSubmitResult.success && (djangoResult.status === 'success' || djangoResult.status === 'info')) {
-                        // Show success modal
-                        newsletterModal.show();
+                        // Show success status
+                        statusDiv.style.display = 'block';
+                        const statusText = document.getElementById('footerStatusText');
+                        
+                        if (djangoResult.status === 'success') {
+                            statusText.innerHTML = '<i class="fas fa-check-circle me-2"></i>Successfully subscribed! Your free eBook is ready.';
+                            statusDiv.querySelector('.alert').className = 'alert alert-success mb-2';
+                            
+                            // Show eBook download button
+                            ebookDownloadDiv.style.display = 'block';
+                            
+                            // Scroll to eBook download section
+                            setTimeout(() => {
+                                ebookDownloadDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }, 300);
+                            
+                            showToast('Successfully subscribed! Download your free eBook below.', 'success');
+                        } else {
+                            statusText.innerHTML = '<i class="fas fa-info-circle me-2"></i>You were already subscribed. Welcome back!';
+                            statusDiv.querySelector('.alert').className = 'alert alert-info mb-2';
+                            showToast('You were already subscribed. Welcome back!', 'info');
+                        }
                         
                         // Reset form
                         footerNewsletterForm.reset();
                         
                         // Log success
                         console.log('Footer newsletter submitted to BOTH services successfully');
+                        
                     } else {
                         throw new Error('One or both submissions failed');
                     }
                     
                 } catch (error) {
                     console.error('Error:', error);
-                    alert('An error occurred. Please try again later.');
+                    statusDiv.style.display = 'block';
+                    statusDiv.innerHTML = `
+                        <div class="alert alert-danger mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Subscription failed. Please try again.
+                        </div>
+                    `;
+                    showToast('Subscription failed. Please try again.', 'error');
                 } finally {
                     // Reset button
                     submitBtn.innerHTML = originalText;
                     submitBtn.disabled = false;
+                }
+            });
+        }
+        
+        // ============ FOOTER EBOOK DOWNLOAD HANDLER ============
+        const footerDownloadEbookBtn = document.getElementById('footerDownloadEbookBtn');
+        if (footerDownloadEbookBtn) {
+            footerDownloadEbookBtn.addEventListener('click', async function() {
+                const ebookId = this.dataset.ebookId;
+                const ebookTitle = this.dataset.ebookTitle;
+                const ebookUrl = this.dataset.ebookUrl;
+                const originalText = this.innerHTML;
+                
+                this.innerHTML = '<span class="loading-spinner"></span> Preparing download...';
+                this.disabled = true;
+                
+                try {
+                    // Track download in database
+                    const response = await fetch(`/api/download-ebook/${ebookId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        // Create download link
+                        const link = document.createElement('a');
+                        link.href = result.download_url || ebookUrl;
+                        link.download = ebookTitle.replace(/\s+/g, '-') + '.pdf';
+                        link.style.display = 'none';
+                        
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
+                        // Show success message
+                        showToast(`"${ebookTitle}" download started! Check your downloads folder.`, 'success');
+                        
+                        // Update button
+                        this.innerHTML = '<i class="fas fa-check me-2"></i>Downloaded Successfully!';
+                        this.classList.remove('download-ebook-btn');
+                        this.classList.add('btn-success');
+                        this.disabled = true;
+                        
+                    } else {
+                        throw new Error(result.message || 'Download failed');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    showToast('Failed to download eBook. Please try again or contact support.', 'error');
+                    
+                    // Reset button
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }
+            });
+        }
+        
+        // ============ EBOOK DOWNLOAD HANDLER ============
+        const downloadEbookBtn = document.getElementById('downloadEbookBtn');
+        if (downloadEbookBtn) {
+            downloadEbookBtn.addEventListener('click', async function() {
+                const ebookId = this.dataset.ebookId;
+                const ebookTitle = this.dataset.ebookTitle;
+                const ebookUrl = this.dataset.ebookUrl;
+                const originalText = this.innerHTML;
+                
+                this.innerHTML = '<span class="loading-spinner"></span> Preparing download...';
+                this.disabled = true;
+                
+                try {
+                    // Track download in database
+                    const response = await fetch(`/api/download-ebook/${ebookId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        // Create download link
+                        const link = document.createElement('a');
+                        link.href = result.download_url || ebookUrl;
+                        link.download = ebookTitle.replace(/\s+/g, '-') + '.pdf';
+                        link.style.display = 'none';
+                        
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
+                        // Show success message
+                        showToast(`"${ebookTitle}" download started! Check your downloads folder.`, 'success');
+                        
+                        // Update button
+                        this.innerHTML = '<i class="fas fa-check me-2"></i>Downloaded!';
+                        this.classList.remove('download-ebook-btn');
+                        this.classList.add('btn-secondary');
+                        this.disabled = true;
+                        
+                    } else {
+                        throw new Error(result.message || 'Download failed');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    showToast('Failed to download eBook. Please try again or contact support.', 'error');
+                    
+                    // Reset button
+                    this.innerHTML = originalText;
+                    this.disabled = false;
                 }
             });
         }
@@ -1766,8 +2239,9 @@
                 const pdfFileName = 'FUSION-FORCE.pdf';
                 
                 // Show loading state
-                downloadPdfBtn.classList.add('loading');
-                downloadPdfBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Preparing PDF...';
+                const originalText = this.innerHTML;
+                this.innerHTML = '<span class="loading-spinner"></span> Preparing PDF...';
+                this.disabled = true;
                 
                 // Simple function to download
                 function startDownload() {
@@ -1789,8 +2263,9 @@
                         
                         // Check if download was successful
                         setTimeout(() => {
-                            downloadPdfBtn.classList.remove('loading');
-                            downloadPdfBtn.innerHTML = '<i class="fas fa-file-pdf me-2"></i>Download Newsletter PDF';
+                            showToast('Newsletter PDF download started!', 'success');
+                            downloadPdfBtn.innerHTML = originalText;
+                            downloadPdfBtn.disabled = false;
                         }, 1000);
                     }, 100);
                 }

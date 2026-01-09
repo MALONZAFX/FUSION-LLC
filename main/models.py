@@ -341,6 +341,33 @@ class FormSubmission(models.Model):
     
     def __str__(self):
         return f"{self.source} - {self.submitted_at.strftime('%Y-%m-%d %H:%M')}"
+    
+
+# ============ FREE EBOOK ============
+class FreeEbook(models.Model):
+    title = models.CharField(max_length=200, default="Free Leadership Guide")
+    subtitle = models.CharField(max_length=300, default="Download our free guide to leadership excellence")
+    description = models.TextField(
+        default="Get our exclusive free eBook with leadership insights, strategies, and actionable tips from Pamela Robinson.",
+        help_text="Description shown to users before download"
+    )
+    ebook_file = models.FileField(upload_to='ebooks/', blank=True, null=True)
+    cover_image = models.ImageField(upload_to='ebook_covers/', blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    download_count = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def increment_download_count(self):
+        self.download_count += 1
+        self.save()
+    
+    def __str__(self):
+        return f"{self.title} ({self.download_count} downloads)"
+    
+    class Meta:
+        verbose_name = "Free eBook"
+        verbose_name_plural = "Free eBooks"    
 
 # ============ SYSTEM LOGS ============
 class SystemLog(models.Model):

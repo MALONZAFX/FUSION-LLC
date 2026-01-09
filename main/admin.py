@@ -7,12 +7,14 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect, HttpResponse
 from django.utils.safestring import mark_safe
 import json
+import csv
+from datetime import timedelta
 
 from .models import (
     SiteSettings, HeroImage, AboutSection, Service,
     ImpactResult, GalleryImage, Testimonial,
     NewsletterContent, ContactSubmission, NewsletterSubscription,
-    FormSubmission, SystemLog
+    FormSubmission, SystemLog, FreeEbook
 )
 
 # ============ ADMIN SITE CONFIG ============
@@ -80,7 +82,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         if obj.logo:
             return format_html(
                 '<img src="{}" style="width: 50px; height: 50px; object-fit: contain; background: #f0f0f0; padding: 5px; border-radius: 5px;" />', 
-                obj.logo.url  # FIXED: Use direct .url
+                obj.logo.url
             )
         return format_html('<div style="width: 50px; height: 50px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 5px;">No Logo</div>')
     logo_preview.short_description = 'Logo'
@@ -89,7 +91,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         if obj.logo:
             return format_html(
                 '<img src="{}" style="max-width: 300px; max-height: 200px; object-fit: contain; background: #f0f0f0; padding: 10px; border-radius: 10px; border: 1px solid #ddd;" />', 
-                obj.logo.url  # FIXED: Use direct .url
+                obj.logo.url
             )
         return "No logo uploaded"
     logo_preview_large.short_description = 'Logo Preview'
@@ -114,7 +116,6 @@ class SiteSettingsAdmin(admin.ModelAdmin):
     )
     
     def has_add_permission(self, request):
-        # Only allow one SiteSettings object
         return SiteSettings.objects.count() == 0
 
 # ============ HERO IMAGE ADMIN ============
@@ -133,7 +134,7 @@ class HeroImageAdmin(admin.ModelAdmin):
         if obj.image:
             return format_html(
                 '<img src="{}" style="width: 60px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;" />', 
-                obj.image.url  # FIXED: Use direct .url
+                obj.image.url
             )
         return format_html('<div style="width: 60px; height: 40px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 4px;">No Image</div>')
     image_preview.short_description = 'Preview'
@@ -142,7 +143,7 @@ class HeroImageAdmin(admin.ModelAdmin):
         if obj.image:
             return format_html(
                 '<img src="{}" style="max-width: 400px; max-height: 300px; object-fit: contain; border-radius: 8px; border: 2px solid #ddd;" />', 
-                obj.image.url  # FIXED: Use direct .url
+                obj.image.url
             )
         return "No image uploaded"
     image_preview_large.short_description = 'Large Preview'
@@ -186,7 +187,6 @@ class HeroImageAdmin(admin.ModelAdmin):
     )
 
 # ============ ABOUT SECTION ADMIN ============
-# ============ ABOUT SECTION ADMIN ============
 @admin.register(AboutSection)
 class AboutSectionAdmin(admin.ModelAdmin):
     list_display = ['title', 'image_preview', 'is_active_badge', 'created_at_display', 'updated_at_display']
@@ -194,8 +194,6 @@ class AboutSectionAdmin(admin.ModelAdmin):
     search_fields = ['title', 'content']
     readonly_fields = ['created_at', 'updated_at', 'image_preview_large', 'image_2_preview_large', 'bullet_points_preview', 'content_preview_field']
     actions = [make_active, make_inactive, duplicate_items]
-    
-    # Add these missing methods:
     
     def image_preview(self, obj):
         if obj.image:
@@ -224,7 +222,6 @@ class AboutSectionAdmin(admin.ModelAdmin):
         return obj.updated_at.strftime('%Y-%m-%d %H:%M')
     updated_at_display.short_description = 'Updated At'
     
-    # Already have this one but keeping for completeness:
     def image_preview_large(self, obj):
         if obj.image:
             return format_html(
@@ -234,7 +231,6 @@ class AboutSectionAdmin(admin.ModelAdmin):
         return "No image uploaded"
     image_preview_large.short_description = 'Image Preview'
     
-    # Add this missing method:
     def bullet_points_preview(self, obj):
         if obj.bullet_points:
             points = obj.bullet_points.split('\n')
@@ -248,10 +244,8 @@ class AboutSectionAdmin(admin.ModelAdmin):
         return "No bullet points"
     bullet_points_preview.short_description = 'Bullet Points Preview'
     
-    # Add this missing method:
     def content_preview_field(self, obj):
         if obj.content:
-            # Truncate content for preview
             preview = obj.content[:150] + '...' if len(obj.content) > 150 else obj.content
             return format_html(
                 '<div style="background: #f8f9fa; padding: 10px; border-radius: 5px; border: 1px solid #ddd; max-width: 600px; max-height: 200px; overflow: auto;">{}</div>',
@@ -260,7 +254,6 @@ class AboutSectionAdmin(admin.ModelAdmin):
         return "No content"
     content_preview_field.short_description = 'Content Preview'
     
-    # Already have this one but keeping for completeness:
     def image_2_preview_large(self, obj):
         if obj.image_2:
             return format_html(
@@ -299,6 +292,7 @@ class AboutSectionAdmin(admin.ModelAdmin):
             'classes': ('collapse', 'wide')
         }),
     )
+
 # ============ SERVICE ADMIN ============
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
@@ -435,7 +429,7 @@ class GalleryImageAdmin(admin.ModelAdmin):
         if obj.image:
             return format_html(
                 '<img src="{}" style="width: 60px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;" />', 
-                obj.image.url  # FIXED: Use direct .url
+                obj.image.url
             )
         return format_html('<div style="width: 60px; height: 40px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 4px;">No Image</div>')
     image_preview.short_description = 'Preview'
@@ -444,7 +438,7 @@ class GalleryImageAdmin(admin.ModelAdmin):
         if obj.image:
             return format_html(
                 '<img src="{}" style="max-width: 400px; max-height: 300px; object-fit: contain; border-radius: 8px; border: 2px solid #ddd;" />', 
-                obj.image.url  # FIXED: Use direct .url
+                obj.image.url
             )
         return "No image uploaded"
     image_preview_large.short_description = 'Large Preview'
@@ -508,7 +502,7 @@ class TestimonialAdmin(admin.ModelAdmin):
         if obj.avatar:
             return format_html(
                 '<img src="{}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 50%; border: 2px solid #053e91;" />', 
-                obj.avatar.url  # FIXED: Use direct .url
+                obj.avatar.url
             )
         return format_html(
             '<div style="width: 40px; height: 40px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #053e91; font-weight: bold; font-size: 14px;">{}</div>',
@@ -520,7 +514,7 @@ class TestimonialAdmin(admin.ModelAdmin):
         if obj.avatar:
             return format_html(
                 '<img src="{}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 50%; border: 3px solid #053e91;" />', 
-                obj.avatar.url  # FIXED: Use direct .url
+                obj.avatar.url
             )
         return format_html(
             '<div style="width: 150px; height: 150px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #053e91; font-weight: bold; font-size: 24px; border: 3px solid #053e91;">{}</div>',
@@ -575,7 +569,7 @@ class NewsletterContentAdmin(admin.ModelAdmin):
         if obj.image:
             return format_html(
                 '<img src="{}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;" />', 
-                obj.image.url  # FIXED: Use direct .url
+                obj.image.url
             )
         return format_html('<div style="width: 50px; height: 50px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 4px;">No Image</div>')
     image_preview.short_description = 'Image'
@@ -584,7 +578,7 @@ class NewsletterContentAdmin(admin.ModelAdmin):
         if obj.image:
             return format_html(
                 '<img src="{}" style="max-width: 400px; max-height: 300px; object-fit: contain; border-radius: 8px; border: 2px solid #ddd;" />', 
-                obj.image.url  # FIXED: Use direct .url
+                obj.image.url
             )
         return "No image uploaded"
     image_preview_large.short_description = 'Large Preview'
@@ -593,7 +587,7 @@ class NewsletterContentAdmin(admin.ModelAdmin):
         if obj.pdf_file:
             return format_html(
                 '<a href="{}" target="_blank" style="background: #dc3545; color: white; padding: 3px 8px; border-radius: 12px; font-size: 12px; text-decoration: none;">📄 View PDF</a>',
-                obj.pdf_file.url  # FIXED: Use direct .url
+                obj.pdf_file.url
             )
         return format_html(
             '<span style="background: #6c757d; color: white; padding: 3px 8px; border-radius: 12px; font-size: 12px;">No PDF</span>'
@@ -604,7 +598,7 @@ class NewsletterContentAdmin(admin.ModelAdmin):
         if obj.pdf_file:
             return format_html(
                 '<a href="{}" target="_blank" class="button">Open PDF in new tab</a>',
-                obj.pdf_file.url  # FIXED: Use direct .url
+                obj.pdf_file.url
             )
         return "No PDF uploaded"
     pdf_link.short_description = 'PDF Link'
@@ -667,9 +661,254 @@ class NewsletterContentAdmin(admin.ModelAdmin):
     )
     
     def has_add_permission(self, request):
-        # Only allow one NewsletterContent object
         return NewsletterContent.objects.count() == 0
 
+# ============ FREE EBOOK ADMIN ============
+@admin.register(FreeEbook)
+class FreeEbookAdmin(admin.ModelAdmin):
+    list_display = ['title', 'cover_preview', 'is_active', 'download_count', 'is_active_badge', 'created_at_display', 'updated_at_display', 'file_size_display']
+    list_display_links = ['title']
+    search_fields = ['title', 'subtitle', 'description']
+    readonly_fields = ['created_at', 'updated_at', 'cover_preview_large', 'download_count', 'pdf_preview_large', 'download_stats', 'file_info']
+    list_editable = ['is_active']
+    actions = [make_active, make_inactive, 'reset_download_count', 'export_download_stats']
+    list_per_page = 20
+    
+    def cover_preview(self, obj):
+        if obj.cover_image:
+            return format_html(
+                '<img src="{}" style="width: 50px; height: 65px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;" />', 
+                obj.cover_image.url
+            )
+        return format_html('<div style="width: 50px; height: 65px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 4px; color: #6c757d; font-size: 10px;">No Cover</div>')
+    cover_preview.short_description = 'Cover'
+    
+    def cover_preview_large(self, obj):
+        if obj.cover_image:
+            return format_html(
+                '<img src="{}" style="max-width: 200px; max-height: 260px; object-fit: contain; border-radius: 8px; border: 2px solid #ddd; margin: 10px 0;" />', 
+                obj.cover_image.url
+            )
+        return format_html('<div style="width: 200px; height: 260px; background: #f8f9fa; border-radius: 8px; border: 2px dashed #ddd; display: flex; align-items: center; justify-content: center; color: #6c757d; margin: 10px 0;">No cover image</div>')
+    cover_preview_large.short_description = 'Cover Preview'
+    
+    def file_size_display(self, obj):
+        if obj.ebook_file:
+            file_size = obj.ebook_file.size
+            if file_size < 1024:
+                return f"{file_size} B"
+            elif file_size < 1024 * 1024:
+                return f"{file_size / 1024:.1f} KB"
+            elif file_size < 1024 * 1024 * 1024:
+                return f"{file_size / (1024 * 1024):.1f} MB"
+            else:
+                return f"{file_size / (1024 * 1024 * 1024):.1f} GB"
+        return "No file"
+    file_size_display.short_description = 'File Size'
+    
+    def pdf_preview_large(self, obj):
+        if obj.ebook_file:
+            file_size = obj.ebook_file.size if obj.ebook_file else 0
+            
+            # Calculate size in appropriate units
+            if file_size < 1024:
+                size_display = f"{file_size} B"
+            elif file_size < 1024 * 1024:
+                size_display = f"{file_size / 1024:.1f} KB"
+            elif file_size < 1024 * 1024 * 1024:
+                size_display = f"{file_size / (1024 * 1024):.1f} MB"
+            else:
+                size_display = f"{file_size / (1024 * 1024 * 1024):.1f} GB"
+            
+            file_name = obj.ebook_file.name.split("/")[-1]
+            file_extension = file_name.split('.')[-1].upper() if '.' in file_name else 'UNKNOWN'
+            
+            html = '<div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; margin: 10px 0;">'
+            html += f'<h5 style="margin-top: 0; color: #053e91;">File Details:</h5>'
+            html += f'<p style="margin: 5px 0;"><strong>File Name:</strong> {file_name}</p>'
+            html += f'<p style="margin: 5px 0;"><strong>File Type:</strong> {file_extension}</p>'
+            html += f'<p style="margin: 5px 0;"><strong>File Size:</strong> {size_display}</p>'
+            html += f'<p style="margin: 5px 0;"><strong>Total Downloads:</strong> {obj.download_count}</p>'
+            html += f'<a href="{obj.ebook_file.url}" target="_blank" style="background: #28a745; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none; display: inline-block; margin-top: 10px; margin-right: 10px;">'
+            html += '<i class="fas fa-external-link-alt me-1"></i> Preview in New Tab</a>'
+            html += f'<a href="{obj.ebook_file.url}" download style="background: #007bff; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none; display: inline-block; margin-top: 10px;">'
+            html += '<i class="fas fa-download me-1"></i> Download File</a>'
+            html += '</div>'
+            return format_html(html)
+        return format_html('<div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; color: #6c757d; margin: 10px 0;">No eBook file uploaded</div>')
+    pdf_preview_large.short_description = 'File Preview'
+    
+    def file_info(self, obj):
+        if obj.ebook_file:
+            html = '<div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border: 1px solid #bbdefb; margin: 10px 0;">'
+            html += '<h5 style="margin-top: 0; color: #1565c0;">File Information:</h5>'
+            html += '<ul style="margin: 5px 0 0 0; padding-left: 20px;">'
+            html += '<li><strong>Uploaded:</strong> ' + obj.created_at.strftime('%Y-%m-%d %H:%M') + '</li>'
+            html += '<li><strong>Last Updated:</strong> ' + obj.updated_at.strftime('%Y-%m-%d %H:%M') + '</li>'
+            html += '<li><strong>Current Status:</strong> ' + ('Active' if obj.is_active else 'Inactive') + '</li>'
+            
+            if obj.download_count > 0:
+                html += f'<li><strong>Download Popularity:</strong> {obj.download_count} download{"s" if obj.download_count != 1 else ""}</li>'
+                days_since_creation = (timezone.now() - obj.created_at).days or 1
+                avg_daily = obj.download_count / days_since_creation
+                html += f'<li><strong>Average Daily Downloads:</strong> {avg_daily:.1f}</li>'
+            
+            html += '</ul>'
+            html += '<p style="margin: 10px 0 0 0; font-size: 0.9em; color: #0d47a1;"><i class="fas fa-info-circle me-1"></i> This eBook will be offered to newsletter subscribers as a free gift.</p>'
+            html += '</div>'
+            return format_html(html)
+        return format_html('<div style="background: #fff3cd; padding: 15px; border-radius: 8px; border: 1px solid #ffecb5; color: #856404; margin: 10px 0;">'
+                          '<i class="fas fa-exclamation-triangle me-1"></i> No eBook file uploaded. Please upload a file to make this eBook available to subscribers.'
+                          '</div>')
+    file_info.short_description = 'File Information'
+    
+    def download_stats(self, obj):
+        html = '<div style="background: #e8f5e9; padding: 15px; border-radius: 8px; border: 1px solid #c3e6cb; margin: 10px 0;">'
+        html += '<h5 style="margin-top: 0; color: #155724;">Download Statistics:</h5>'
+        
+        if obj.download_count > 0:
+            html += f'<p style="margin: 5px 0;"><strong>Total Downloads:</strong> <span style="font-size: 1.2em; font-weight: bold; color: #28a745;">{obj.download_count}</span></p>'
+            
+            days_since_creation = (timezone.now() - obj.created_at).days or 1
+            avg_daily = obj.download_count / days_since_creation
+            
+            html += f'<p style="margin: 5px 0;"><strong>Average daily:</strong> {avg_daily:.1f} downloads/day</p>'
+            html += f'<p style="margin: 5px 0;"><strong>Created:</strong> {obj.created_at.strftime("%Y-%m-%d")} ({days_since_creation} days ago)</p>'
+            
+            if avg_daily > 5:
+                performance = "Excellent"
+                performance_color = "#28a745"
+            elif avg_daily > 2:
+                performance = "Good"
+                performance_color = "#17a2b8"
+            elif avg_daily > 0.5:
+                performance = "Average"
+                performance_color = "#ffc107"
+            else:
+                performance = "Low"
+                performance_color = "#6c757d"
+                
+            html += f'<p style="margin: 5px 0;"><strong>Performance:</strong> <span style="color: {performance_color}; font-weight: bold;">{performance}</span></p>'
+        else:
+            html += '<p style="margin: 5px 0; color: #6c757d;"><i class="fas fa-info-circle me-1"></i> No downloads yet</p>'
+            html += '<p style="margin: 5px 0; font-size: 0.9em;">Upload an eBook file and make it active to start tracking downloads.</p>'
+        
+        html += '</div>'
+        return format_html(html)
+    download_stats.short_description = 'Download Statistics'
+    
+    def is_active_badge(self, obj):
+        if obj.is_active:
+            return format_html(
+                '<span style="background: #28a745; color: white; padding: 3px 8px; border-radius: 12px; font-size: 12px;">Active</span>'
+            )
+        return format_html(
+            '<span style="background: #6c757d; color: white; padding: 3px 8px; border-radius: 12px; font-size: 12px;">Inactive</span>'
+        )
+    is_active_badge.short_description = 'Status'
+    
+    def created_at_display(self, obj):
+        return obj.created_at.strftime('%Y-%m-%d')
+    created_at_display.short_description = 'Created'
+    
+    def updated_at_display(self, obj):
+        return obj.updated_at.strftime('%Y-%m-%d %H:%M')
+    updated_at_display.short_description = 'Updated'
+    
+    def reset_download_count(self, request, queryset):
+        updated = queryset.update(download_count=0)
+        messages.success(request, f"Reset download count to 0 for {updated} eBook(s)")
+    reset_download_count.short_description = "🔄 Reset download count to 0"
+    
+    def export_download_stats(self, request, queryset):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="ebook_download_stats.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['Title', 'Downloads', 'File Size', 'Created', 'Last Updated', 'Status', 'File Name', 'Active'])
+        
+        for ebook in queryset:
+            file_name = ebook.ebook_file.name.split('/')[-1] if ebook.ebook_file else 'No file'
+            status = 'Active' if ebook.is_active else 'Inactive'
+            file_size = ebook.ebook_file.size if ebook.ebook_file else 0
+            
+            # Format file size
+            if file_size < 1024:
+                size_display = f"{file_size} B"
+            elif file_size < 1024 * 1024:
+                size_display = f"{file_size / 1024:.1f} KB"
+            elif file_size < 1024 * 1024 * 1024:
+                size_display = f"{file_size / (1024 * 1024):.1f} MB"
+            else:
+                size_display = f"{file_size / (1024 * 1024 * 1024):.1f} GB"
+            
+            writer.writerow([
+                ebook.title,
+                ebook.download_count,
+                size_display,
+                ebook.created_at.strftime('%Y-%m-%d'),
+                ebook.updated_at.strftime('%Y-%m-%d %H:%M'),
+                status,
+                file_name,
+                'Yes' if ebook.is_active else 'No'
+            ])
+        
+        return response
+    export_download_stats.short_description = "📊 Export download statistics as CSV"
+    
+    fieldsets = (
+        ('eBook Information', {
+            'fields': ('title', 'subtitle', 'description'),
+            'description': 'This eBook will be offered as a free gift to newsletter subscribers.',
+            'classes': ('wide',)
+        }),
+        ('Cover Image (Optional)', {
+            'fields': ('cover_image', 'cover_preview_large'),
+            'description': 'Recommended size: 200x260 pixels. This will be displayed to users. Cover image is optional.',
+            'classes': ('wide',)
+        }),
+        ('eBook File', {
+            'fields': ('ebook_file', 'pdf_preview_large', 'file_info'),
+            'description': 'Upload the eBook file that users will download. Accepts PDF, DOC, DOCX, EPUB, MOBI, and other document formats. <strong>No file size limit</strong> - upload files of any size.',
+            'classes': ('wide',)
+        }),
+        ('Statistics', {
+            'fields': ('download_count', 'download_stats'),
+            'classes': ('wide',)
+        }),
+        ('Status', {
+            'fields': ('is_active',),
+            'description': 'Only active eBooks will be shown on the website. Only one eBook can be active at a time.',
+            'classes': ('wide',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse', 'wide')
+        }),
+    )
+    
+    def save_model(self, request, obj, form, change):
+        if change and 'is_active' in form.changed_data and not obj.is_active:
+            active_ebooks = FreeEbook.objects.filter(is_active=True).exclude(id=obj.id).count()
+            if active_ebooks == 0:
+                messages.warning(request, "No active eBooks will remain. Newsletter subscribers won't see any free eBook offer.")
+        
+        if change and 'is_active' in form.changed_data and obj.is_active:
+            FreeEbook.objects.filter(is_active=True).exclude(id=obj.id).update(is_active=False)
+            messages.info(request, "Other eBooks have been deactivated. Only one eBook can be active at a time.")
+        
+        super().save_model(request, obj, form, change)
+    
+    def has_add_permission(self, request):
+        active_count = FreeEbook.objects.filter(is_active=True).count()
+        if active_count > 0:
+            messages.info(request, "There's already an active eBook. Adding a new one will require you to choose which one to activate.")
+        return True
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.order_by('-is_active', '-download_count', '-updated_at')
+    
 # ============ CONTACT SUBMISSION ADMIN ============
 @admin.register(ContactSubmission)
 class ContactSubmissionAdmin(admin.ModelAdmin):
@@ -788,98 +1027,6 @@ class NewsletterSubscriptionAdmin(admin.ModelAdmin):
         }),
     )
 
-# ============ FORM SUBMISSION ADMIN ============
-@admin.register(FormSubmission)
-class FormSubmissionAdmin(admin.ModelAdmin):
-    list_display = ['source_badge', 'submitted_at_display', 'processed_display', 'form_data_preview']
-    list_filter = ['source', 'processed', 'submitted_at']
-    list_display_links = ['source_badge']
-    search_fields = ['source', 'form_data']
-    readonly_fields = ['submitted_at', 'form_data_display']
-    date_hierarchy = 'submitted_at'
-    actions = ['mark_as_processed', 'mark_as_unprocessed']
-    list_per_page = 25
-    
-    def source_badge(self, obj):
-        colors = {
-            'booking': '#dc3545',
-            'newsletter': '#28a745',
-            'footer': '#17a2b8'
-        }
-        color = colors.get(obj.source, '#6c757d')
-        return format_html(
-            '<span style="background: {}; color: white; padding: 3px 8px; border-radius: 12px; font-size: 12px;">{}</span>',
-            color,
-            obj.get_source_display()
-        )
-    source_badge.short_description = 'Source'
-    
-    def processed_display(self, obj):
-        if obj.processed:
-            return format_html(
-                '<span style="background: #28a745; color: white; padding: 3px 8px; border-radius: 12px; font-size: 12px;">Processed</span>'
-            )
-        return format_html(
-            '<span style="background: #ffc107; color: black; padding: 3px 8px; border-radius: 12px; font-size: 12px;">Pending</span>'
-        )
-    processed_display.short_description = 'Status'
-    
-    def submitted_at_display(self, obj):
-        return obj.submitted_at.strftime('%Y-%m-%d %H:%M')
-    submitted_at_display.short_description = 'Submitted'
-    
-    def form_data_preview(self, obj):
-        try:
-            data = json.loads(obj.form_data)
-            preview = json.dumps(data, indent=2)[:80] + '...' if len(json.dumps(data)) > 80 else json.dumps(data, indent=2)
-            return format_html(
-                '<pre style="margin: 0; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: #f8f9fa; padding: 5px; border-radius: 4px; font-size: 11px;">{}</pre>',
-                preview
-            )
-        except:
-            return "Invalid JSON"
-    form_data_preview.short_description = 'Form Data'
-    
-    def form_data_display(self, obj):
-        try:
-            data = json.loads(obj.form_data)
-            formatted = json.dumps(data, indent=2)
-            return format_html(
-                '<pre style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; max-height: 500px; overflow: auto;">{}</pre>',
-                formatted
-            )
-        except:
-            return "Invalid JSON"
-    form_data_display.short_description = 'Form Data (Full)'
-    
-    def mark_as_processed(self, request, queryset):
-        updated = queryset.update(processed=True)
-        messages.success(request, f"{updated} submissions marked as processed")
-    mark_as_processed.short_description = "✅ Mark selected as processed"
-    
-    def mark_as_unprocessed(self, request, queryset):
-        updated = queryset.update(processed=False)
-        messages.success(request, f"{updated} submissions marked as unprocessed")
-    mark_as_unprocessed.short_description = "⏳ Mark selected as unprocessed"
-    
-    fieldsets = (
-        ('Submission Information', {
-            'fields': ('source', 'processed'),
-            'classes': ('wide',)
-        }),
-        ('Form Data', {
-            'fields': ('form_data_display',),
-            'classes': ('wide',)
-        }),
-        ('Timestamp', {
-            'fields': ('submitted_at',),
-            'classes': ('collapse', 'wide')
-        }),
-    )
-    
-    def has_add_permission(self, request):
-        return False
-
 # ============ SYSTEM LOG ADMIN ============
 @admin.register(SystemLog)
 class SystemLogAdmin(admin.ModelAdmin):
@@ -924,10 +1071,6 @@ class SystemLogAdmin(admin.ModelAdmin):
     created_at_display.short_description = 'Created'
     
     def clear_old_logs(self, request, queryset):
-        from django.utils import timezone
-        from datetime import timedelta
-        
-        # Delete logs older than 30 days
         cutoff_date = timezone.now() - timedelta(days=30)
         old_logs = SystemLog.objects.filter(created_at__lt=cutoff_date)
         count = old_logs.count()
@@ -955,3 +1098,16 @@ class SystemLogAdmin(admin.ModelAdmin):
     
     def has_change_permission(self, request, obj=None):
         return False
+
+# Add custom admin action for eBook analytics
+def track_ebook_performance(modeladmin, request, queryset):
+    for ebook in queryset:
+        days_since_creation = (timezone.now() - ebook.created_at).days or 1
+        avg_daily = ebook.download_count / days_since_creation
+        
+        messages.info(request, 
+            f"'{ebook.title}': {ebook.download_count} downloads total, "
+            f"{avg_daily:.1f} avg/day over {days_since_creation} days"
+        )
+track_ebook_performance.short_description = "📈 Show eBook performance analytics"
+FreeEbookAdmin.actions.append(track_ebook_performance)
