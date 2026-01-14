@@ -692,9 +692,17 @@ class FreeEbookAdmin(admin.ModelAdmin):
         return format_html('<div style="width: 200px; height: 260px; background: #f8f9fa; border-radius: 8px; border: 2px dashed #ddd; display: flex; align-items: center; justify-content: center; color: #6c757d; margin: 10px 0;">No cover image</div>')
     cover_preview_large.short_description = 'Cover Preview'
     
-    def file_size_display(self, obj):
-        if obj.ebook_file:
-            file_size = obj.ebook_file.size
+def file_size_display(self, obj):
+    """Safe file size display that handles missing files"""
+    try:
+        if obj.ebook_file and obj.ebook_file.name:
+            # Check if file exists before trying to get size
+            try:
+                file_size = obj.ebook_file.size
+            except (FileNotFoundError, OSError):
+                return "⚠️ File missing"
+            
+            # Format the size
             if file_size < 1024:
                 return f"{file_size} B"
             elif file_size < 1024 * 1024:
@@ -704,9 +712,11 @@ class FreeEbookAdmin(admin.ModelAdmin):
             else:
                 return f"{file_size / (1024 * 1024 * 1024):.1f} GB"
         return "No file"
-    file_size_display.short_description = 'File Size'
+    except Exception as e:
+        return "Error"
+file_size_display.short_description = 'File Size'
     
-    def pdf_preview_large(self, obj):
+def pdf_preview_large(self, obj):
         if obj.ebook_file:
             file_size = obj.ebook_file.size if obj.ebook_file else 0
             
@@ -736,9 +746,9 @@ class FreeEbookAdmin(admin.ModelAdmin):
             html += '</div>'
             return format_html(html)
         return format_html('<div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; color: #6c757d; margin: 10px 0;">No eBook file uploaded</div>')
-    pdf_preview_large.short_description = 'File Preview'
+pdf_preview_large.short_description = 'File Preview'
     
-    def file_info(self, obj):
+def file_info(self, obj):
         if obj.ebook_file:
             html = '<div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border: 1px solid #bbdefb; margin: 10px 0;">'
             html += '<h5 style="margin-top: 0; color: #1565c0;">File Information:</h5>'
